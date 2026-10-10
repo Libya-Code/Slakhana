@@ -1,0 +1,1378 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ملحمتي | منظومة إدارة اللحوم</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
+    />
+
+    <style>
+      :root {
+        --primary: #16845b;
+        --primary-dark: #106846;
+        --primary-light: #e8f6ef;
+        --bg: #f5f7f6;
+        --white: #fff;
+        --text: #202a25;
+        --muted: #84918a;
+        --border: #e8eeea;
+        --red: #dc5353;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Cairo", sans-serif;
+        background: var(--bg);
+        color: var(--text);
+      }
+
+      button,
+      input,
+      select {
+        font: inherit;
+      }
+
+      button {
+        cursor: pointer;
+      }
+
+      .app {
+        display: flex;
+        min-height: 100vh;
+      }
+
+      /* القائمة الجانبية */
+
+      .sidebar {
+        width: 245px;
+        background: #fff;
+        border-left: 1px solid var(--border);
+        padding: 27px 18px;
+        position: fixed;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        z-index: 10;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 0 8px 30px;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .brand-icon {
+        width: 46px;
+        height: 46px;
+        display: grid;
+        place-items: center;
+        background: var(--primary);
+        color: white;
+        border-radius: 14px;
+        font-size: 21px;
+      }
+
+      .brand h2 {
+        font-size: 21px;
+        font-weight: 800;
+      }
+
+      .brand p {
+        font-size: 11px;
+        color: var(--muted);
+      }
+
+      .menu-title {
+        color: #a1aaa5;
+        font-size: 12px;
+        margin: 28px 10px 12px;
+      }
+
+      .nav-link {
+        display: flex;
+        align-items: center;
+        gap: 13px;
+        padding: 13px 14px;
+        margin: 5px 0;
+        border-radius: 11px;
+        color: #68766e;
+        font-size: 14px;
+        text-decoration: none;
+        transition: 0.2s;
+      }
+
+      .nav-link i {
+        width: 20px;
+        text-align: center;
+      }
+
+      .nav-link:hover,
+      .nav-link.active {
+        color: var(--primary);
+        background: var(--primary-light);
+        font-weight: 700;
+      }
+
+      .sidebar-footer {
+        position: absolute;
+        bottom: 22px;
+        right: 18px;
+        left: 18px;
+        background: #f6f9f7;
+        padding: 15px;
+        border-radius: 13px;
+        font-size: 12px;
+        color: var(--muted);
+        line-height: 2;
+      }
+
+      /* المحتوى الرئيسي */
+
+      .main {
+        width: calc(100% - 245px);
+        margin-right: 245px;
+        padding: 27px 32px 40px;
+      }
+
+      .topbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 32px;
+      }
+
+      .welcome h1 {
+        font-size: 25px;
+        font-weight: 800;
+      }
+
+      .welcome p {
+        color: var(--muted);
+        font-size: 13px;
+        margin-top: 5px;
+      }
+
+      .top-actions {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+      }
+
+      .date-box {
+        background: #fff;
+        border: 1px solid var(--border);
+        padding: 10px 14px;
+        border-radius: 10px;
+        font-size: 12px;
+        color: #69766e;
+      }
+
+      .profile {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .avatar {
+        background: #dff1e7;
+        color: var(--primary);
+        border-radius: 12px;
+        width: 42px;
+        height: 42px;
+        display: grid;
+        place-items: center;
+        font-size: 18px;
+      }
+
+      .profile strong {
+        font-size: 13px;
+      }
+
+      .profile small {
+        display: block;
+        color: var(--muted);
+        font-size: 11px;
+      }
+
+      /* عنوان الصفحة وزر البيع */
+
+      .page-heading {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 15px;
+        margin-bottom: 24px;
+      }
+
+      .page-heading h2 {
+        font-size: 21px;
+      }
+
+      .page-heading p {
+        color: var(--muted);
+        font-size: 13px;
+        margin-top: 4px;
+      }
+
+      .btn {
+        border: none;
+        border-radius: 10px;
+        padding: 12px 19px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 9px;
+        font-weight: 700;
+        font-size: 13px;
+        transition: 0.2s;
+      }
+
+      .btn-primary {
+        color: white;
+        background: var(--primary);
+        box-shadow: 0 5px 12px #16845b20;
+      }
+
+      .btn-primary:hover {
+        background: var(--primary-dark);
+        transform: translateY(-1px);
+      }
+
+      /* بطاقات الإحصائيات */
+
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 17px;
+        margin-bottom: 28px;
+      }
+
+      .stat-card {
+        background: white;
+        border: 1px solid var(--border);
+        padding: 20px;
+        border-radius: 15px;
+        transition: 0.2s;
+      }
+
+      .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px #172d2010;
+      }
+
+      .stat-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 17px;
+      }
+
+      .stat-icon {
+        width: 43px;
+        height: 43px;
+        border-radius: 12px;
+        display: grid;
+        place-items: center;
+        font-size: 18px;
+      }
+
+      .green {
+        background: #e5f6ed;
+        color: #16845b;
+      }
+      .orange {
+        background: #fff0df;
+        color: #e48a28;
+      }
+      .blue {
+        background: #e7efff;
+        color: #4876d9;
+      }
+      .red {
+        background: #ffebeb;
+        color: #db5959;
+      }
+
+      .stat-label {
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .stat-value {
+        font-size: 23px;
+        font-weight: 800;
+        margin-top: 5px;
+        direction: rtl;
+      }
+
+      .stat-value span {
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--muted);
+      }
+
+      /* جدول المبيعات */
+
+      .sales-panel {
+        background: #fff;
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        overflow: hidden;
+      }
+
+      .panel-header {
+        padding: 23px 23px 18px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 15px;
+      }
+
+      .panel-header h3 {
+        font-size: 17px;
+      }
+
+      .panel-header p {
+        font-size: 12px;
+        color: var(--muted);
+        margin-top: 5px;
+      }
+
+      .sales-count {
+        background: var(--primary-light);
+        color: var(--primary);
+        padding: 6px 10px;
+        border-radius: 8px;
+        font-size: 11px;
+        font-weight: 700;
+      }
+
+      .filters {
+        display: flex;
+        gap: 10px;
+        padding: 0 23px 20px;
+      }
+
+      .search-box {
+        position: relative;
+        flex: 1;
+      }
+
+      .search-box i {
+        position: absolute;
+        right: 13px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #9aa69e;
+      }
+
+      .search-box input,
+      .filters select {
+        height: 43px;
+        width: 100%;
+        border: 1px solid var(--border);
+        border-radius: 9px;
+        outline: none;
+        padding: 0 38px 0 12px;
+        background: #fff;
+        font-size: 12px;
+        color: var(--text);
+      }
+
+      .filters select {
+        width: 155px;
+        padding: 0 12px;
+      }
+
+      .search-box input:focus,
+      .filters select:focus {
+        border-color: var(--primary);
+      }
+
+      .table-wrap {
+        overflow-x: auto;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        white-space: nowrap;
+        text-align: right;
+      }
+
+      thead {
+        background: #f8faf9;
+      }
+
+      th {
+        color: #7f8b83;
+        font-size: 11px;
+        font-weight: 700;
+        padding: 15px 18px;
+        border-top: 1px solid var(--border);
+        border-bottom: 1px solid var(--border);
+      }
+
+      td {
+        padding: 16px 18px;
+        font-size: 12px;
+        border-bottom: 1px solid #f0f3f1;
+      }
+
+      tbody tr {
+        transition: 0.15s;
+      }
+
+      tbody tr:hover {
+        background: #fbfdfb;
+      }
+
+      .invoice {
+        color: var(--primary);
+        font-weight: 800;
+      }
+
+      .customer {
+        font-weight: 700;
+      }
+
+      .muted {
+        display: block;
+        color: var(--muted);
+        font-size: 10px;
+        margin-top: 4px;
+      }
+
+      .amount {
+        font-weight: 800;
+      }
+
+      .payment {
+        display: inline-block;
+        background: #e8f7ee;
+        color: #16845b;
+        padding: 5px 9px;
+        border-radius: 6px;
+        font-size: 10px;
+      }
+
+      .payment.card {
+        background: #eaf0ff;
+        color: #426ed0;
+      }
+
+      .payment.transfer {
+        background: #fff1e2;
+        color: #c47b25;
+      }
+
+      .actions {
+        display: flex;
+        gap: 8px;
+      }
+
+      .icon-btn {
+        border: 1px solid var(--border);
+        background: white;
+        color: #718077;
+        border-radius: 7px;
+        width: 31px;
+        height: 31px;
+        display: grid;
+        place-items: center;
+      }
+
+      .icon-btn:hover {
+        color: var(--primary);
+        border-color: var(--primary);
+      }
+
+      .empty {
+        text-align: center;
+        padding: 40px 15px;
+        color: var(--muted);
+      }
+
+      .table-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 17px 23px;
+        color: var(--muted);
+        font-size: 11px;
+      }
+
+      /* نافذة إضافة بيع */
+
+      .modal {
+        position: fixed;
+        inset: 0;
+        background: #101a16a6;
+        z-index: 100;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+      }
+
+      .modal.show {
+        display: flex;
+        animation: fadeIn 0.2s ease;
+      }
+
+      .modal-card {
+        width: 100%;
+        max-width: 540px;
+        max-height: 90vh;
+        overflow-y: auto;
+        background: white;
+        border-radius: 17px;
+        box-shadow: 0 20px 70px #0002;
+        animation: slideUp 0.25s ease;
+      }
+
+      .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 22px 24px;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .modal-header h3 {
+        font-size: 18px;
+      }
+
+      .close-btn {
+        background: #f2f5f3;
+        border: none;
+        width: 35px;
+        height: 35px;
+        border-radius: 9px;
+        color: #68766e;
+      }
+
+      .form {
+        padding: 23px 24px;
+      }
+
+      .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 17px;
+      }
+
+      .field {
+        margin-bottom: 17px;
+      }
+
+      .field.full {
+        grid-column: 1 / -1;
+      }
+
+      .field label {
+        display: block;
+        font-size: 12px;
+        font-weight: 700;
+        margin-bottom: 8px;
+      }
+
+      .field input,
+      .field select {
+        width: 100%;
+        height: 45px;
+        border: 1px solid #dfe7e2;
+        border-radius: 9px;
+        padding: 0 12px;
+        outline: none;
+        background: white;
+        font-size: 13px;
+      }
+
+      .field input:focus,
+      .field select:focus {
+        border-color: var(--primary);
+      }
+
+      .total-box {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px;
+        background: var(--primary-light);
+        border-radius: 10px;
+        margin-bottom: 20px;
+      }
+
+      .total-box span {
+        font-size: 13px;
+        color: #426a55;
+      }
+
+      .total-box strong {
+        font-size: 21px;
+        color: var(--primary-dark);
+      }
+
+      .form-buttons {
+        display: flex;
+        gap: 10px;
+      }
+
+      .form-buttons button {
+        flex: 1;
+      }
+
+      .btn-cancel {
+        background: #f1f4f2;
+        color: #66736b;
+      }
+
+      .toast {
+        position: fixed;
+        bottom: 25px;
+        left: 25px;
+        z-index: 200;
+        background: #183d2e;
+        color: white;
+        border-radius: 10px;
+        padding: 14px 20px;
+        font-size: 13px;
+        box-shadow: 0 8px 25px #0002;
+        display: none;
+      }
+
+      .toast.show {
+        display: block;
+        animation: slideUp 0.2s ease;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+
+      @keyframes slideUp {
+        from {
+          opacity: 0;
+          transform: translateY(12px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      /* الهواتف والشاشات الصغيرة */
+
+      @media (max-width: 1150px) {
+        .sidebar {
+          width: 210px;
+        }
+        .main {
+          width: calc(100% - 210px);
+          margin-right: 210px;
+          padding: 24px 20px;
+        }
+        .stats {
+          grid-template-columns: repeat(2, 1fr);
+        }
+        .profile-info {
+          display: none;
+        }
+      }
+
+      @media (max-width: 720px) {
+        .sidebar {
+          width: 100%;
+          height: 68px;
+          top: auto;
+          bottom: 0;
+          right: 0;
+          padding: 6px 8px;
+          border-left: none;
+          border-top: 1px solid var(--border);
+          display: flex;
+          justify-content: space-around;
+          align-items: center;
+          background: #fff;
+        }
+
+        .brand,
+        .menu-title,
+        .sidebar-footer {
+          display: none;
+        }
+
+        .nav-link {
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          gap: 4px;
+          margin: 0;
+          padding: 8px 10px;
+          font-size: 10px;
+          min-width: 54px;
+        }
+
+        .nav-link i {
+          font-size: 17px;
+        }
+
+        .main {
+          width: 100%;
+          margin-right: 0;
+          padding: 22px 14px 90px;
+        }
+
+        .topbar {
+          margin-bottom: 25px;
+        }
+
+        .welcome h1 {
+          font-size: 21px;
+        }
+        .welcome p {
+          font-size: 11px;
+        }
+        .date-box {
+          display: none;
+        }
+        .profile {
+          display: none;
+        }
+
+        .page-heading {
+          align-items: flex-start;
+        }
+
+        .page-heading h2 {
+          font-size: 18px;
+        }
+        .page-heading p {
+          font-size: 11px;
+        }
+
+        .page-heading .btn {
+          padding: 11px 12px;
+          font-size: 11px;
+          white-space: nowrap;
+        }
+
+        .stats {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 10px;
+          margin-bottom: 20px;
+        }
+
+        .stat-card {
+          padding: 14px;
+        }
+        .stat-icon {
+          width: 36px;
+          height: 36px;
+          font-size: 15px;
+        }
+        .stat-value {
+          font-size: 19px;
+        }
+        .stat-label {
+          font-size: 11px;
+        }
+        .stat-top {
+          margin-bottom: 12px;
+        }
+
+        .panel-header {
+          padding: 18px 14px;
+        }
+        .panel-header h3 {
+          font-size: 15px;
+        }
+        .filters {
+          padding: 0 14px 16px;
+        }
+        .filters select {
+          width: 115px;
+          font-size: 11px;
+        }
+        .search-box input {
+          font-size: 11px;
+        }
+        th,
+        td {
+          padding: 13px 14px;
+        }
+        .table-footer {
+          padding: 15px;
+        }
+
+        .form-grid {
+          grid-template-columns: 1fr;
+          gap: 0;
+        }
+        .field.full {
+          grid-column: auto;
+        }
+        .modal-header,
+        .form {
+          padding: 18px;
+        }
+      }
+
+      @media (max-width: 370px) {
+        .stats {
+          grid-template-columns: 1fr;
+        }
+        .page-heading {
+          flex-direction: column;
+        }
+        .filters {
+          flex-direction: column;
+        }
+        .filters select {
+          width: 100%;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="app">
+      <aside class="sidebar">
+        <div class="brand">
+          <div class="brand-icon">
+            <i class="fa-solid fa-drumstick-bite"></i>
+          </div>
+          <div>
+            <h2>ملحمتي</h2>
+            <p>منظومة إدارة اللحوم</p>
+          </div>
+        </div>
+
+        <p class="menu-title">القائمة الرئيسية</p>
+
+        <a href="#" class="nav-link active">
+          <i class="fa-solid fa-house"></i> الرئيسية
+        </a>
+
+        <a href="#sales" class="nav-link">
+          <i class="fa-solid fa-cash-register"></i> المبيعات
+        </a>
+
+        <a href="#" class="nav-link" data-feature="الأصناف">
+          <i class="fa-solid fa-cubes"></i> الأصناف
+        </a>
+
+        <a href="#" class="nav-link" data-feature="التقارير">
+          <i class="fa-solid fa-chart-line"></i> التقارير
+        </a>
+
+        <div class="sidebar-footer">
+          <i class="fa-solid fa-circle-check" style="color: #16845b"></i>
+          <strong style="color: #33443a">ملحمتي</strong><br />
+          واجهة إدارة المبيعات
+        </div>
+      </aside>
+
+      <main class="main">
+        <header class="topbar">
+          <div class="welcome">
+            <h1>مرحباً بك 👋</h1>
+            <p>إليك ملخص حركة المبيعات في ملحمتك.</p>
+          </div>
+
+          <div class="top-actions">
+            <div class="date-box">
+              <i class="fa-regular fa-calendar"></i>
+              <span id="todayDate"></span>
+            </div>
+
+            <div class="profile">
+              <div class="avatar"><i class="fa-solid fa-user"></i></div>
+              <div class="profile-info">
+                <strong>مدير الملحمة</strong>
+                <small>المسؤول الرئيسي</small>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <section class="page-heading">
+          <div>
+            <h2>لوحة المبيعات</h2>
+            <p>تابع مبيعاتك وحركة البيع اليومية.</p>
+          </div>
+
+          <button class="btn btn-primary" id="openModal">
+            <i class="fa-solid fa-plus"></i>
+            إضافة بيع جديد
+          </button>
+        </section>
+
+        <section class="stats">
+          <article class="stat-card">
+            <div class="stat-top">
+              <span class="stat-label">إجمالي مبيعات اليوم</span>
+              <div class="stat-icon green">
+                <i class="fa-solid fa-money-bill-wave"></i>
+              </div>
+            </div>
+            <div class="stat-value" id="totalSales">0.00 <span>د.ل</span></div>
+          </article>
+
+          <article class="stat-card">
+            <div class="stat-top">
+              <span class="stat-label">عدد عمليات البيع</span>
+              <div class="stat-icon blue">
+                <i class="fa-solid fa-receipt"></i>
+              </div>
+            </div>
+            <div class="stat-value" id="salesCount">0</div>
+          </article>
+        </section>
+
+        <section class="sales-panel" id="sales">
+          <div class="panel-header">
+            <div>
+              <h3>مبيعات اليوم</h3>
+              <p>جميع عمليات البيع المسجلة لهذا اليوم.</p>
+            </div>
+            <span class="sales-count" id="tableCount">0 عملية</span>
+          </div>
+
+          <div class="filters">
+            <div class="search-box">
+              <i class="fa-solid fa-magnifying-glass"></i>
+              <input
+                type="search"
+                id="searchInput"
+                placeholder="ابحث برقم الفاتورة أو اسم الزبون..."
+              />
+            </div>
+
+            <select id="paymentFilter">
+              <option value="">كل طرق الدفع</option>
+              <option value="نقدي">نقدي</option>
+              <option value="بطاقة">بطاقة</option>
+              <option value="تحويل">تحويل</option>
+            </select>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>رقم الفاتورة</th>
+                  <th>الصنف</th>
+                  <th>عدد</th>
+                  <th>الإجمالي</th>
+                  <th>طريقة الدفع</th>
+                  <th>الوقت</th>
+                  <th>الإجراءات</th>
+                </tr>
+              </thead>
+
+              <tbody id="salesTable"></tbody>
+            </table>
+          </div>
+
+          <div class="table-footer">
+            <span id="tableInfo">لا توجد مبيعات حتى الآن</span>
+            <span>ملحمتي © 2026</span>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <!-- نافذة إضافة عملية بيع -->
+
+    <div class="modal" id="saleModal">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3>
+            <i class="fa-solid fa-cart-plus" style="color: #16845b"></i> إضافة
+            عملية بيع
+          </h3>
+          <button class="close-btn" id="closeModal" aria-label="إغلاق">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <form class="form" id="saleForm">
+          <div class="form-grid">
+            <!-- <div class="field full">
+              <label for="customer">اسم الزبون</label>
+              <input
+                type="text"
+                id="customer"
+                maxlength="100"
+                placeholder="اسم الزبون (اختياري)"
+              />
+            </div> -->
+
+            <div class="field">
+              <label for="product">نوع اللحوم</label>
+              <select id="product" required>
+                <option value="">اختر الصنف</option>
+                <option value="لحم ضأن">لحم ضأن</option>
+                <option value="لحم بقري">لحم بقري</option>
+                <option value="لحم مفروم">لحم مفروم</option>
+                <option value="أضلاع ضأن">أضلاع ضأن</option>
+                <option value="كبدة">كبدة</option>
+                <option value="دجاج">دجاج</option>
+                <option value="أخرى">أخرى</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label for="weight">عدد</label>
+              <input
+                type="number"
+                id="weight"
+                min="0.01"
+                max="10000"
+                step="0.01"
+                placeholder="مثال: 2.5"
+                required
+              />
+            </div>
+
+            <div class="field">
+              <label for="price">سعر (د.ل)</label>
+              <input
+                type="number"
+                id="price"
+                min="0.01"
+                max="1000000"
+                step="0.01"
+                placeholder="مثال: 35"
+                required
+              />
+            </div>
+
+            <div class="field">
+              <label for="payment">طريقة الدفع</label>
+              <select id="payment" required>
+                <option value="نقدي">نقدي</option>
+                <option value="بطاقة">بطاقة</option>
+                <option value="تحويل">تحويل</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="total-box">
+            <span>إجمالي قيمة البيع</span>
+            <strong id="saleTotal">0.00 د.ل</strong>
+          </div>
+
+          <div class="form-buttons">
+            <button type="submit" class="btn btn-primary">
+              <i class="fa-solid fa-check"></i> تأكيد البيع
+            </button>
+
+            <button type="button" class="btn btn-cancel" id="cancelModal">
+              إلغاء
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+      const $ = (selector) => document.querySelector(selector);
+
+      const modal = $("#saleModal");
+      const form = $("#saleForm");
+      const salesTable = $("#salesTable");
+
+      // تاريخ اليوم
+      $("#todayDate").textContent = new Intl.DateTimeFormat("ar-LY", {
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      }).format(new Date());
+
+      // تخزين تجريبي محلي داخل المتصفح
+      // هذه البيانات ليست قاعدة بيانات مشتركة بين الأجهزة.
+      const STORAGE_KEY = "malhamti_sales_v1";
+
+      function loadSales() {
+        try {
+          const data = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+          return Array.isArray(data) ? data : [];
+        } catch {
+          return [];
+        }
+      }
+
+      let sales = loadSales();
+
+      function saveSales() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(sales));
+      }
+
+      function escapeHTML(value) {
+        return String(value).replace(
+          /[&<>"']/g,
+          (char) =>
+            ({
+              "&": "&amp;",
+              "<": "&lt;",
+              ">": "&gt;",
+              '"': "&quot;",
+              "'": "&#39;",
+            })[char],
+        );
+      }
+
+      function money(value) {
+        return Number(value).toLocaleString("en-US", {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        });
+      }
+
+      function todayKey() {
+        const d = new Date();
+        return [
+          d.getFullYear(),
+          String(d.getMonth() + 1).padStart(2, "0"),
+          String(d.getDate()).padStart(2, "0"),
+        ].join("-");
+      }
+
+      function todaySales() {
+        return sales.filter((sale) => sale.date === todayKey());
+      }
+
+      function showToast(message) {
+        const toast = $("#toast");
+        toast.textContent = message;
+        toast.classList.add("show");
+
+        setTimeout(() => toast.classList.remove("show"), 3000);
+      }
+
+      function renderStats() {
+        const list = todaySales();
+        const total = list.reduce((sum, sale) => sum + sale.total, 0);
+        const weight = list.reduce((sum, sale) => sum + sale.weight, 0);
+
+        $("#totalSales").innerHTML = `${money(total)} <span>د.ل</span>`;
+        $("#salesCount").textContent = list.length;
+        
+      }
+
+      function renderTable() {
+        const query = $("#searchInput").value.trim().toLowerCase();
+        const payment = $("#paymentFilter").value;
+
+        const list = todaySales()
+          .filter((sale) => {
+            const matchesQuery =
+              sale.customer.toLowerCase().includes(query) ||
+              sale.invoice.toLowerCase().includes(query) ||
+              sale.product.toLowerCase().includes(query);
+
+            return matchesQuery && (!payment || sale.payment === payment);
+          })
+          .sort((a, b) => b.createdAt - a.createdAt);
+
+        $("#tableCount").textContent = `${list.length} عملية`;
+        $("#tableInfo").textContent = list.length
+          ? `عرض ${list.length} من ${todaySales().length} عملية`
+          : "لا توجد مبيعات مطابقة";
+
+        if (!list.length) {
+          salesTable.innerHTML = `
+                <tr>
+                    <td colspan="8">
+                        <div class="empty">
+                            <i class="fa-solid fa-receipt"
+                               style="font-size:28px;margin-bottom:12px"></i>
+                            <p>لا توجد مبيعات لعرضها</p>
+                        </div>
+                    </td>
+                </tr>`;
+          renderStats();
+          return;
+        }
+
+        salesTable.innerHTML = list
+          .map((sale) => {
+            const paymentClass =
+              {
+                نقدي: "",
+                بطاقة: "card",
+                تحويل: "transfer",
+              }[sale.payment] || "";
+
+            return `
+                <tr>
+                    <td class="invoice">${escapeHTML(sale.invoice)}</td>
+                    <td>${escapeHTML(sale.product)}</td>
+                    <td>${money(sale.weight)}</td>
+                    <td class="amount">${money(sale.total)} د.ل</td>
+                    <td>
+                        <span class="payment ${paymentClass}">
+                            ${escapeHTML(sale.payment)}
+                        </span>
+                    </td>
+                    <td>${escapeHTML(sale.time)}</td>
+                    <td>
+                        <div class="actions">
+                            <button class="icon-btn" title="طباعة الفاتورة"
+                                data-print="${escapeHTML(sale.id)}">
+                                <i class="fa-solid fa-print"></i>
+                            </button>
+                            <button class="icon-btn" title="حذف البيع"
+                                data-delete="${escapeHTML(sale.id)}">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>`;
+          })
+          .join("");
+
+        renderStats();
+      }
+
+      function openModal() {
+        form.reset();
+        modal.classList.add("show");
+        document.body.style.overflow = "hidden";
+        // setTimeout(() => $("#product").focus(), 50);
+      }
+
+      function closeModal() {
+        modal.classList.remove("show");
+        document.body.style.overflow = "";
+      }
+
+      $("#openModal").addEventListener("click", openModal);
+      $("#closeModal").addEventListener("click", closeModal);
+      $("#cancelModal").addEventListener("click", closeModal);
+
+      modal.addEventListener("click", (event) => {
+        if (event.target === modal) closeModal();
+      });
+
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") closeModal();
+      });
+
+      form.addEventListener("submit", (event) => {
+        event.preventDefault();
+
+        const price = Number($("#price").value);
+        const weight = Number($("#weight").value)
+        if (
+          !Number.isFinite(price) ||
+          price <= 0
+        ) {
+          showToast("تأكد من إدخال وزن وسعر صحيحين.");
+          return;
+        }
+
+        const now = new Date();
+
+        const sale = {
+          id: crypto.randomUUID(),
+          invoice: "INV-" + Date.now().toString().slice(-8),
+          customer: "",
+          product: $("#product").value,
+          weight,
+          price,
+          total: Math.round(price * 100) / 100,
+          payment: $("#payment").value,
+          date: todayKey(),
+          time: now.toLocaleTimeString("ar-LY", {
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: false,
+          }),
+          createdAt: now.getTime(),
+        };
+
+        sales.push(sale);
+
+        try {
+          saveSales();
+        } catch {
+          sales.pop();
+          showToast("تعذر حفظ البيع في المتصفح.");
+          return;
+        }
+
+        closeModal();
+        renderTable();
+        showToast("تم تسجيل عملية البيع بنجاح.");
+      });
+
+      $("#searchInput").addEventListener("input", renderTable);
+      $("#paymentFilter").addEventListener("change", renderTable);
+
+      salesTable.addEventListener("click", (event) => {
+        const deleteButton = event.target.closest("[data-delete]");
+        const printButton = event.target.closest("[data-print]");
+
+        if (deleteButton) {
+          const id = deleteButton.dataset.delete;
+          const sale = sales.find((item) => item.id === id);
+
+          if (!sale) return;
+
+          if (confirm(`هل تريد حذف الفاتورة ${sale.invoice}؟`)) {
+            sales = sales.filter((item) => item.id !== id);
+            saveSales();
+            renderTable();
+            showToast("تم حذف عملية البيع.");
+          }
+        }
+
+        if (printButton) {
+          const sale = sales.find(
+            (item) => item.id === printButton.dataset.print,
+          );
+
+          if (!sale) return;
+        }
+      });
+
+      document.querySelectorAll("[data-feature]").forEach((link) => {
+        link.addEventListener("click", (event) => {
+          event.preventDefault();
+          showToast(`قسم ${link.dataset.feature} غير مفعّل في هذه النسخة.`);
+        });
+      });
+
+      renderTable();
+    </script>
+  </body>
+</html>
