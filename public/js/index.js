@@ -4,6 +4,44 @@ const modal = $("#saleModal");
 const form = $("#saleForm");
 const salesTable = $("#salesTable");
 
+
+const saleField = document.querySelector(".sale-field");
+const buyingField = document.querySelector(".buying-field");
+
+const productSelect = document.querySelector("#product");
+const buyingInput = document.querySelector("#buyingProduct");
+
+const transactionButtons = document.querySelectorAll(".transaction-type button");
+
+function updateTransaction(type) {
+    const isSale = type === "sale";
+
+    // إظهار وإخفاء الحقول
+    saleField.hidden = !isSale;
+    buyingField.hidden = isSale;
+
+    // تفعيل الحقل الظاهر وتعطيل المخفي
+    productSelect.disabled = !isSale;
+    buyingInput.disabled = isSale;
+
+    // تحديث الزر المحدد
+    transactionButtons.forEach(button => {
+        button.classList.toggle("active", button.dataset.type === type);
+    });
+}
+
+// البيع هو الافتراضي
+let transactionType = "sale";
+
+updateTransaction(transactionType);
+
+transactionButtons.forEach(button => {
+    button.addEventListener("click", () => {
+        transactionType = button.dataset.type;
+        updateTransaction(transactionType);
+    });
+});
+
 // تاريخ اليوم
 $("#todayDate").textContent = new Intl.DateTimeFormat("ar-LY", {
   weekday: "long",

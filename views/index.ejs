@@ -32,11 +32,11 @@
 
         <p class="menu-title">القائمة الرئيسية</p>
 
-        <a href="#" class="nav-link active">
+        <a href="/skow829o9" class="nav-link active">
           <i class="fa-solid fa-house"></i> الرئيسية
         </a>
 
-        <a href="#sales" class="nav-link">
+        <a href="?sales=1" class="nav-link">
           <i class="fa-solid fa-cash-register"></i> المبيعات
         </a>
 
@@ -44,8 +44,9 @@
           <i class="fa-solid fa-cubes"></i> الأصناف
         </a>
 
-        <a href="#" class="nav-link" data-feature="التقارير">
-          <i class="fa-solid fa-chart-line"></i> التقارير
+        <a href="#" class="nav-link">
+          <i class="fa-solid fa-file-invoice-dollar"></i>
+          <span>الديون</span>
         </a>
 
         <div class="sidebar-footer">
@@ -115,44 +116,9 @@
         <section class="sales-panel" id="sales">
           <div class="panel-header">
             <div>
-              <h3>مبيعات اليوم</h3>
               <p>جميع عمليات البيع المسجلة لهذا اليوم.</p>
             </div>
-            <span class="sales-count" id="tableCount">0 عملية</span>
-          </div>
-
-          <div class="filters">
-            <div class="search-box">
-              <i class="fa-solid fa-magnifying-glass"></i>
-              <input
-                type="search"
-                id="searchInput"
-                placeholder="ابحث برقم الفاتورة أو اسم الزبون..."
-              />
-            </div>
-
-            <select id="paymentFilter">
-              <option value="">كل طرق الدفع</option>
-              <option value="نقدي">نقدي</option>
-              <option value="بطاقة">بطاقة</option>
-              <option value="تحويل">تحويل</option>
-            </select>
-          </div>
-
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>رقم الفاتورة</th>
-                  <th>الصنف</th>
-                  <th>عدد</th>
-                  <th>الإجمالي</th>
-                  <th>طريقة الدفع</th>
-                  <th>الوقت</th>
-                  <th>الإجراءات</th>
-                </tr>
-              </thead>
-                <%
+             <%
     const query = (typeof searchQuery !== "undefined" ? searchQuery : "").trim().toLowerCase();
     const payment = typeof selectedPayment !== "undefined" ? selectedPayment : "";
 
@@ -165,22 +131,28 @@
         return matchesQuery && (!payment || sale.payment === payment);
     });
 %>
-
-<div id="tableCount"><%= list.length %> عملية</div>
-
-<div id="tableInfo">
-    <%= list.length
-        ? `عرض ${list.length} من ${(total || []).length} عملية`
-        : "لا توجد مبيعات مطابقة"
-    %>
-</div>
+            <span class="sales-count" id="tableCount"><%= list.length %> عملية</span>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>رقم الفاتورة</th>
+                  <th>الصنف</th>
+                  <th>عدد</th>
+                  <th>سعر</th>
+                  <th>طريقة الدفع</th>
+                  <th>الوقت</th>
+                
+                </tr>
+              </thead>
     <tbody id="salesTable">
         <% if (!list.length) { %>
             <tr>
-                <td colspan="8">
+                <td colspan="6">
                     <div class="empty">
-                        <i class="fa-solid fa-receipt"
-                           style="font-size:28px;margin-bottom:12px"></i>
+                        <!-- <i class="fa-solid fa-receipt"
+                           style="font-size:28px;margin-bottom:12px"></i> -->
                         <p>لا توجد مبيعات لعرضها</p>
                     </div>
                 </td>
@@ -206,7 +178,7 @@
           </div>
 
           <div class="table-footer">
-            <span id="tableInfo">لا توجد مبيعات حتى الآن</span>
+            <span id="tableInfo">البرمجة و التطوير : عبدالمهيمن</span>
             <span>ملحمتي © 2026</span>
           </div>
         </section>
@@ -220,7 +192,7 @@
         <div class="modal-header">
           <h3>
             <i class="fa-solid fa-cart-plus" style="color: #16845b"></i> إضافة
-            عملية بيع
+            عملية بيع / شراء
           </h3>
           <button class="close-btn" id="closeModal" aria-label="إغلاق">
             <i class="fa-solid fa-xmark"></i>
@@ -229,18 +201,22 @@
 
         <form class="form" id="saleForm">
           <div class="form-grid">
-            <!-- <div class="field full">
-              <label for="customer">اسم الزبون</label>
-              <input
-                type="text"
-                id="customer"
-                maxlength="100"
-                placeholder="اسم الزبون (اختياري)"
-              />
-            </div> -->
+        <div class="field full">
+    <label class="customer">حدد نوع المعاملة</label>
+        <div class="transaction-type">
+            <button type="button" class="sale active" data-type="sale">
+                بيع
+            </button>
 
-            <div class="field">
+            <button type="button" class="buying" data-type="buying">
+                شراء
+            </button>
+        </div>
+        </div>
+            <!-- يظهر في حالة البيع -->
+          <div class="field product sale-field">
               <label for="product">نوع اللحوم</label>
+
               <select id="product" name="product" required>
                   <option value="">اختر الصنف</option>
                   <option value="دجاج">دجاج</option>
@@ -251,8 +227,21 @@
                       </option>
                   <% }) %>
               </select>
-            </div>
+          </div>
 
+          <!-- يظهر في حالة الشراء -->
+          <div class="field product buying-field" hidden>
+              <label for="buyingProduct">ادخل اسم الشيء الذي اشتريته</label>
+
+              <input
+                  type="text"
+                  id="buyingProduct"
+                  name="buyingProduct"
+                  placeholder="مثال: مكنسة"
+                  disabled
+                  required
+              >
+          </div>
             <div class="field">
               <label for="weight">عدد</label>
               <input
@@ -289,10 +278,10 @@
             </div>
           </div>
 
-          <div class="total-box">
+          <!-- <div class="total-box">
             <span>إجمالي قيمة البيع</span>
             <strong id="saleTotal">0.00 د.ل</strong>
-          </div>
+          </div> -->
 
           <div class="form-buttons">
             <button type="submit" class="btn btn-primary">

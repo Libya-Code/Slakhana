@@ -38,8 +38,11 @@ app.get("/login", (req, res) => {
 })
 
 app.get("/skow829o9", verifyAdmin, async (req, res) => {
+  const { staetDate, endDate, sales } = req.query
+
   try {
-    const { startOfDay, startOfTomorrow } = time();
+
+    const { startOfDay, startOfTomorrow } = (!isNaN(new Date(staetDate).getTime()) && !isNaN(new Date(endDate).getTime())) ? time(staetDate, endDate) : time();
 
     const [total, totalSale, totalSaleCounter, Category] = await Promise.all([
       Sale.find({
@@ -75,13 +78,22 @@ app.get("/skow829o9", verifyAdmin, async (req, res) => {
       category.find()
     ])
 
+    if (sales == "1") {
+      res.render("sales-history", {
+        total,
+        totalSale,
+        totalSaleCounter,
+        Category
+      })
+    } else {
+      res.render("index", {
+        total,
+        totalSale,
+        totalSaleCounter,
+        Category
+      })
+    }
 
-    res.render("index", {
-      total,
-      totalSale,
-      totalSaleCounter,
-      Category
-    })
   } catch (error) {
     console.error(error);
     return res.redirect("/login");
@@ -89,9 +101,27 @@ app.get("/skow829o9", verifyAdmin, async (req, res) => {
   }
 })
 
+
+
+app.get("/categories", verifyAdmin, async (req, res) => {
+  try {
+    const Category = await category.find().lean();
+
+    return res.render("categories", {
+      categories:Category
+    });
+  } catch (error) {
+    console.error("Get Categories Error:", error);
+
+    return res.status(500).send("حدث خطأ أثناء جلب الأصناف.");
+  }
+});
+
+
 // ================
 // تسجيل الدخول 
 // ===============
+
 app.post("/api/login", async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -145,10 +175,11 @@ app.post("/api/login", async (req, res) => {
   }
 });
 
-app.post("/api/sales", async (req, res) => {
+app.post("/api/sales", verifyUser, async (req, res) => {
   try {
     const { name, qye, price, payment } = req.body;
-    
+    const user = req.user
+
     if (
       !name?.trim() ||
       qye == null ||
@@ -178,7 +209,8 @@ app.post("/api/sales", async (req, res) => {
       name: name.trim(),
       qye: Number(qye),
       price: Number(price),
-      payment: payment.trim()
+      payment: payment.trim(),
+      employeeName: user?.name ?? "غير معرف"
     });
 
     return res.status(201).json({
@@ -197,6 +229,94 @@ app.post("/api/sales", async (req, res) => {
   }
 });
 
+// =============================
+// جزئية الحدف مبياعات / حدف دين 
+//===========================
+
+app.delete("/api/delete", verifyUser, async (req, res) => {
+  const { uuid, type } = req.body;
+
+  try {
+    if (!uuid || !type) {
+      return res.status(400).json({
+        success: false,
+        message: "يجب تحديد المعرف ونوع الحذف"
+      });
+    }
+
+    let deletedData;
+
+    if (type === "sale") {
+      // حذف عملية بيع
+      deletedData = await Sale.findByIdAndDelete(uuid);
+
+    } else if (type === "debt") {
+      // حذف صاحب الدين
+      deletedData = await Debt.findByIdAndDelete(uuid);
+
+    } else {
+      return res.status(400).json({
+        success: false,
+        message: "نوع الحذف غير صالح"
+      });
+    }
+
+    if (!deletedData) {
+      return res.status(404).json({
+        success: false,
+        message: "العنصر المطلوب غير موجود"
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "تم الحذف بنجاح"
+    });
+
+  } catch (error) {
+    console.error("Delete Error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "حدث خطأ أثناء عملية الحذف"
+    });
+  }
+});
+
+// ===============
+// اضافة تصنيف 
+// ============
+app.post("/api/categories", verifyUser, async (req, res) => {
+    try {
+        const { name, description } = req.body;
+
+        if (!name || !name.trim()) {
+            return res.status(400).json({
+                success: false,
+                message: "اسم الصنف مطلوب."
+            });
+        }
+
+        const newCategory = await category.create({
+            name: name.trim(),
+            description: description?.trim() || ""
+        });
+
+        return res.status(201).json({
+            success: true,
+            message: "تمت إضافة الصنف بنجاح.",
+            category: newCategory
+        });
+
+    } catch (error) {
+        console.error("Add Category Error:", error);
+
+        return res.status(500).json({
+            success: false,
+            message: "حدث خطأ أثناء إضافة الصنف."
+        });
+    }
+});
 
 const PORT = process.env.PORT || 3000
 app.listen(PORT, () => {

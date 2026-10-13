@@ -1,3 +1,4 @@
+const { name } = require("ejs");
 const { Schema, model } = require("mongoose");
 
 // سكيمة العداد
@@ -13,6 +14,10 @@ const Counter = model("counter", counterSchema);
 // =================
 
 const SchemaUser = new Schema({
+  name: {
+    type: String,
+    default: "غير معروف"
+  },
   email: {
     type: String,
     require: true,
@@ -33,6 +38,10 @@ const SchemaUser = new Schema({
 // ===============
 const SchemaSale = new Schema({
   uuid: Number,
+  employeeName: {
+    type: String,
+    default: null
+  },
   name: {
     type: String,
     default: null,
@@ -49,13 +58,17 @@ const SchemaSale = new Schema({
     type: String,
     default: null,
   },
+  status: {
+    type: Boolean,
+    default: true
+  },
   createdAt: {
     type: Date,
     default: Date.now,
   },
 });
 
-SchemaSale.pre("save", async function(){
+SchemaSale.pre("save", async function () {
   if (this.isNew) {
     const { seq } = await Counter.findOneAndUpdate(
       {
@@ -65,7 +78,7 @@ SchemaSale.pre("save", async function(){
         $inc: { seq: 1 },
       },
       {
-         returnDocument: "after",
+        returnDocument: "after",
         upsert: true,
       },
     );
@@ -77,6 +90,10 @@ SchemaSale.pre("save", async function(){
 // ==============
 const SchemaCategory = new Schema({
   name: {
+    type: String,
+    default: null,
+  },
+  description: {
     type: String,
     default: null,
   },

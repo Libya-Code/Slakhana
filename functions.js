@@ -3,6 +3,9 @@ const jwt = require("jsonwebtoken")
 const TOKEN_JWT = process.env.TOKEN_JWT
 
 
+const { Sale, category, User } = require("./moongodb")
+
+
 function text(req, res, next) {
 
     next()
@@ -19,8 +22,25 @@ async function verifyAdmin(req, res, next) {
     next()
 }
 
-function verifyUser(params) {
+async function verifyUser(req, res, next) {
+    const token = req.cookies?.token;
+    try {
+        if (!token) return res.status(401).json({
+            success: false,
+            message: "يرجا تسجيل دخولك اولا "
+        });
 
+        const Date = jwt.verify(token, TOKEN_JWT)
+        const user = await User.findById(Date.id)
+
+        req.user = user
+    } catch (error) {
+        return res.status(401).json({
+            success: false,
+            message: "يرجا تسجيل دخولك اولا "
+        });
+    }
+    next()
 }
 
 function time(startOFDey, endOFDey) {

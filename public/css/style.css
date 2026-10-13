@@ -443,6 +443,41 @@ tbody tr:hover {
   font-weight: 700;
 }
 
+.transaction-type {
+display: flex;
+gap: 10px;
+margin-top: 10px;
+}
+
+.transaction-type button {
+flex: 1;
+padding: 12px;
+border: 1px solid var(--btn-border);
+border-radius: 10px;
+background: var(--btn-text);
+color: var(--btn-active);
+font-size: 15px;
+font-weight: 600;
+cursor: pointer;
+transition: all 0.25s ease;
+}
+
+/* .transaction-type button:hover {
+border-color: var(--btn-border);
+} */
+
+.transaction-type button.active {
+background: var(--btn-active);
+color: #fff;
+border-color: var(--btn-active);
+box-shadow: 0 4px 12px var(--btn-disabled);
+}
+
+.transaction-type button:active {
+transform: scale(0.97);
+}
+
+
 .muted {
   display: block;
   color: var(--muted);
@@ -898,4 +933,102 @@ tbody tr:hover {
     background: var(--btn-disabled);
     cursor: not-allowed;
     box-shadow: none;
+}
+
+/* ================
+صفحة المبياعات 
+===================
+*/
+.sales-panel div{
+  padding: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.content-Data button {
+  background-color: #0b5439;
+  color: #dfe7e2;
+  border: 0;
+  border-radius: 10px;
+  padding-left: 10px;
+  padding-right: 10px;
+  width: 100px;
+}
+.sales-Data{
+  display: flex;
+  gap: 10px;
+  font-size: 10px;
+  .sales-Data p {
+    order: 1;
+  };
+  .sales-Data input {
+    order: 2;
+  }
+}
+
+.table-actions {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.table-actions button {
+    width: 35px;
+    height: 35px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    transition: 0.2s ease;
+}
+
+/* زر الطباعة */
+.btn-print {
+    background: #e3f2fd;
+    color: var(--btn-active);
+}
+
+.btn-print:hover {
+    background: var(--btn-active);
+    color: white;
+}
+
+/* زر الحذف */
+.btn-delete {
+    background: #ffebee;
+    color: #e53935;
+}
+
+.btn-delete:hover {
+    background: #e53935;
+    color: white;
+}
+.Sale,
+.Purchase {
+    display: inline-block;
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    text-align: center;
+    min-width: 65px;
+}
+
+/* بيع */
+.Sale {
+    background: #e8f7ee;
+    color: #16a34a;
+    border: 1px solid var(--btn-disabled);
+}
+
+/* شراء */
+.Purchase {
+    background: rgba(255, 0, 0, 0.144);
+    color: var(--red);
+    border: 1px solid var(--red);
 }

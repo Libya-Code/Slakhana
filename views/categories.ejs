@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>إدارة الأصناف | منظومة السلّاخة</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
+    />
+
+    <link rel="stylesheet" href="/css/categories.css" />
+  </head>
+
+  <body>
+    <div class="app">
+      <!-- القائمة الجانبية -->
+      <aside class="sidebar">
+        <div class="brand">
+          <div class="brand-icon">
+            <i class="fa-solid fa-drumstick-bite"></i>
+          </div>
+
+          <div>
+            <h2>السلّاخة</h2>
+            <p>نظام إدارة السلّاخة</p>
+          </div>
+        </div>
+
+        <p class="menu-title">القائمة الرئيسية</p>
+
+        <nav class="navigation">
+          <a href="/skow829o9" class="nav-link">
+            <i class="fa-solid fa-house"></i> الرئيسية
+          </a>
+
+          <a href="?sales=1" class="nav-link">
+            <i class="fa-solid fa-cash-register"></i> المبيعات
+          </a>
+
+          <a href="/categories" class="nav-link active" data-feature="الأصناف">
+            <i class="fa-solid fa-cubes"></i> الأصناف
+          </a>
+
+          <a href="#" class="nav-link">
+            <i class="fa-solid fa-file-invoice-dollar"></i>
+            <span>الديون</span>
+          </a>
+        </nav>
+
+        <div class="sidebar-footer">
+          <i class="fa-solid fa-shield-halved"></i>
+          <span>نظام إدارة الأصناف</span>
+          <br />
+          <span>جميع الحقوق محفوظة © 2026</span>
+        </div>
+      </aside>
+
+      <!-- المحتوى الرئيسي -->
+      <main class="main">
+        <!-- الشريط العلوي -->
+        <header class="topbar">
+          <div class="welcome">
+            <h1>إدارة الأصناف</h1>
+            <p>إدارة وتنظيم أصناف اللحوم والمنتجات</p>
+          </div>
+
+          <div class="top-actions">
+            <div class="date-box">
+              <i class="fa-regular fa-calendar"></i>
+              <span id="currentDate"></span>
+            </div>
+
+            <div class="profile">
+              <div class="avatar">
+                <i class="fa-solid fa-user"></i>
+              </div>
+
+              <div class="profile-info">
+                <strong>مدير النظام</strong>
+                <small>إدارة السلّاخة</small>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <!-- عنوان الصفحة -->
+        <section class="page-heading">
+          <div>
+            <h2>الأصناف</h2>
+            <p>أضف الأصناف وعدّل بياناتها وتابع حالتها.</p>
+          </div>
+
+          <button class="btn btn-primary" id="openAddModal">
+            <i class="fa-solid fa-plus"></i>
+            إضافة صنف جديد
+          </button>
+        </section>
+
+        <!-- الإحصائيات -->
+        <section class="stats">
+          <article class="stat-card">
+            <div class="stat-top">
+              <div class="stat-icon green">
+                <i class="fa-solid fa-layer-group"></i>
+              </div>
+
+              <span class="stat-label">جميع الأصناف</span>
+            </div>
+
+            <h3 class="stat-value" id="totalCount">0</h3>
+
+            <p class="stat-description">إجمالي الأصناف المسجلة</p>
+          </article>
+        </section>
+
+        <!-- جدول الأصناف -->
+        <section class="sales-panel">
+            <div class="panel-header">
+                <div>
+                    <h3>قائمة الأصناف</h3>
+                    <p>جميع الأصناف المسجلة في المنظومة</p>
+                </div>
+
+                <span class="sales-count">
+                    <%= categories.length %> صنف
+                </span>
+            </div>
+          <!-- الجدول -->
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>رمز الصنف</th>
+                  <th>الصنف</th>
+                  <th>الإجراءات</th>
+                </tr>
+              </thead>
+                <tbody id="categoriesTable">
+                    <% if (categories.length > 0) { %>
+                        <% categories.forEach((category, index) => { %>
+                            <tr>
+                                <td><%= index + 1 %></td>
+                                <td>
+
+                                </td>
+                                <td>
+                                    <div class="category-name">
+                                        <div class="category-icon">
+                                            <i class="fa-solid fa-drumstick-bite"></i>
+                                        </div>
+
+                                        <div>
+                                            <strong><%= category.name %></strong>
+                                            <small>
+                                                <%= category.description || "لا توجد ملاحظات" %>
+                                            </small>
+                                        </div>
+                                    </div>
+                                </td>
+                                
+                                <td>
+                                    <div class="table-actions">
+                                        <button
+                                            class="icon-btn delete"
+                                            data-action="delete"
+                                            data-id="<%= category._id %>"
+                                            title="حذف الصنف"
+                                        >
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        <% }); %>
+                    <% } %>
+                </tbody>
+            </table>
+            <div class="empty" id="emptyState" <%= categories.length > 0 ? 'hidden' : '' %>>
+                <div class="empty-icon">
+                    <i class="fa-solid fa-box-open"></i>
+                </div>
+
+                <h3>لا توجد أصناف</h3>
+
+                <p>لم تتم إضافة أي أصناف حتى الآن.</p>
+
+                <button class="btn btn-primary" id="emptyAddButton">
+                    <i class="fa-solid fa-plus"></i>
+                    إضافة صنف
+                </button>
+            </div>
+          </div>
+
+          <div class="table-footer">
+            <span id="footerCount">عرض 0 من 0 أصناف</span>
+
+            <button class="text-button" id="clearFilters">
+              <i class="fa-solid fa-rotate-right"></i>
+              إعادة ضبط البحث
+            </button>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <!-- نافذة إضافة / تعديل صنف -->
+    <div class="modal" id="categoryModal">
+      <div class="modal-card">
+        <div class="modal-header">
+          <div>
+            <h3 id="modalTitle">إضافة صنف جديد</h3>
+            <p>أدخل بيانات الصنف بشكل صحيح.</p>
+          </div>
+
+          <button class="close-btn" id="closeModal" aria-label="إغلاق">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <form class="form" id="categoryForm">
+          <input type="hidden" id="categoryId" />
+
+          <div class="form-grid">
+            <div class="field full">
+              <label for="categoryName">اسم الصنف</label>
+
+              <input
+                type="text"
+                id="categoryName"
+                placeholder="مثال: لحم بقري"
+                maxlength="80"
+                required
+              />
+            </div>
+            <div class="field full">
+              <label for="categoryDescription">ملاحظات (اختياري)</label>
+
+              <textarea
+                id="categoryDescription"
+                placeholder="أضف وصفًا أو ملاحظات عن الصنف..."
+                maxlength="300"
+              ></textarea>
+            </div>
+          </div>
+
+          <div class="form-buttons">
+            <button type="button" class="btn btn-cancel" id="cancelModal">
+              إلغاء
+            </button>
+
+            <button type="submit" class="btn btn-primary" id="saveButton">
+              <i class="fa-solid fa-floppy-disk"></i>
+              حفظ الصنف
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- رسالة التنبيه -->
+    <div class="toast" id="toast" role="status" aria-live="polite">
+      <i class="fa-solid fa-circle-check"></i>
+      <span id="toastMessage"></span>
+    </div>
+     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="/js/categories.js"></script>
+  </body>
+</html>
