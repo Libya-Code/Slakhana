@@ -376,7 +376,7 @@ app.post("/api/categories", verifyUser, async (req, res) => {
   }
 });
 
-
+// حدف تصنيف
 app.delete("/api/category/:id", verifyUser, async (req, res) => {
     try {
         const { id } = req.params;
@@ -423,7 +423,7 @@ const validId = (req, res) => {
   }
   return true;
 };
-
+// صفحة الديون 
 app.get('/debts', verifyAdmin, async (req, res) => {
   try {
     const debts = await Debt.find().sort({ createdAt: -1 }).lean();
@@ -447,14 +447,13 @@ app.get('/debts', verifyAdmin, async (req, res) => {
 // إضافة دين
 app.post('/api/debts', verifyUser, async (req, res) => {
   try {
-    let { customerName, phone, amount, dueDate, note, email, password } = req.body;
+    const { customerName, phone, amount, dueDate, note} = req.body;
     const amt = Number(amount);
     if (!customerName?.trim()) return res.status(400).json({ ok: false, message: 'اسم المدين مطلوب' });
-    if (!password?.trim()) return res.status(400).json({ ok: false, message: 'كلمة مرور مطلوبه' });
-    if (!email?.trim()) return res.status(400).json({ ok: false, message: 'الاميل مطلوب' });
+    
     if (!amt || amt <= 0) return res.status(400).json({ ok: false, message: 'المبلغ غير صحيح' });
-    password = await bcrypt.hash(password, 12)
-    const debt = await Debt.create({ customerName, phone, amount: amt, note, dueDate: dueDate || null, email, password });
+   
+    const debt = await Debt.create({ customerName, phone, amount: amt, note, dueDate: dueDate || null });
     res.status(201).json({ ok: true, debt });
   } catch (e) {
     console.error(e);
