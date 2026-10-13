@@ -18,6 +18,10 @@ const SchemaUser = new Schema({
     type: String,
     default: "غير معروف"
   },
+  status:{
+    type: String,
+    default: "admin"
+  },
   email: {
     type: String,
     require: true,
@@ -103,8 +107,51 @@ const SchemaCategory = new Schema({
   },
 });
 
+const paymentSchema = new Schema({
+  amount: { type: Number, required: true, min: 0.01 },
+  method: { type: String, enum: ['cash', 'transfer', 'binance'], default: 'cash' },
+  note: { type: String, trim: true, default: '' },
+  date: { type: Date, default: Date.now },
+});
+
+const debtSchema = new Schema(
+  {
+    customerName: { type: String, required: true, trim: true },
+    phone: { type: String, trim: true, default: '' },
+    amount: { type: Number, required: true, min: 0.01 }, // إجمالي الدين
+    paid: { type: Number, default: 0, min: 0 },          // المسدد
+    status: { type: String, enum: ['unpaid', 'partial', 'paid'], default: 'unpaid', index: true },
+    dueDate: { type: Date, default: null },
+    note: { type: String, trim: true, default: '' },
+    payments: { type: [paymentSchema], default: [] },
+  },
+  { timestamps: true }
+);
+
+debtSchema.virtual('remaining').get(function () {
+  return Math.max(this.amount - this.paid, 0);
+});
+debtSchema.set('toJSON', { virtuals: true });
+
+const employeeSchema = new Schema(
+  {
+    name: { type: String, required: true, trim: true },
+    phone: { type: String, trim: true, default: '' },
+    email: { type: String, require: true, default: null },
+    password: { type: String, default: null },
+    position: { type: String, trim: true, default: '' },          // الوظيفة
+    salary: { type: Number, default: 0, min: 0 },                  // الراتب الشهري
+    hireDate: { type: Date, default: Date.now },                   // تاريخ التعيين
+    status: { type: String, enum: ['active', 'inactive'], default: 'active', index: true },
+    note: { type: String, trim: true, default: '' },
+  },
+  { timestamps: true }
+);
+
+const Employee = model("Employee", employeeSchema)
+const Debt = model('Debt', debtSchema);
 const category = model("category", SchemaCategory);
 const Sale = model("Sale", SchemaSale);
 const User = model("user", SchemaUser);
 
-module.exports = { category, Sale, User };
+module.exports = { category, Sale, User, Debt, Employee };

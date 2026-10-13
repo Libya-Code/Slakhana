@@ -1,21 +1,60 @@
 const jwt = require("jsonwebtoken")
+const sanitizeHtml = require("sanitize-html");
+
 
 const TOKEN_JWT = process.env.TOKEN_JWT
 
 
-const { Sale, category, User } = require("./moongodb")
+const { Sale, category, User, Employee } = require("./moongodb")
+
 
 
 function text(req, res, next) {
+    try {
+        function clean(value) {
+            if (typeof value === "string") {
+                return sanitizeHtml(value, {
+                    allowedTags: [],
+                    allowedAttributes: {}
+                }).trim();
+            }
 
-    next()
+            if (Array.isArray(value)) {
+                return value.map(clean);
+            }
+
+            if (value !== null && typeof value === "object") {
+                const result = {};
+
+                for (const [key, item] of Object.entries(value)) {
+                    result[key] = clean(item);
+                }
+
+                return result;
+            }
+
+            return value;
+        }
+
+        if (req.body && typeof req.body === "object") {
+            req.body = clean(req.body);
+        }
+
+        next();
+    } catch (error) {
+        next(error);
+    }
+
 }
+
 
 async function verifyAdmin(req, res, next) {
     const token = req.cookies?.token;
     try {
         if (!token) return res.redirect("/login");
-        jwt.verify(token, TOKEN_JWT)
+        const Date = await jwt.verify(token, TOKEN_JWT)
+        const user = await User.findById(Date.id) || await Employee.findById(Date.id)
+        if (user.status === "inactive") return res.redirect("/login");
     } catch (error) {
         return res.redirect("/login");
     }
@@ -30,8 +69,8 @@ async function verifyUser(req, res, next) {
             message: "يرجا تسجيل دخولك اولا "
         });
 
-        const Date = jwt.verify(token, TOKEN_JWT)
-        const user = await User.findById(Date.id)
+        const Date = await jwt.verify(token, TOKEN_JWT)
+        const user = await User.findById(Date.id) || await Employee.findById(Date.id)
 
         req.user = user
     } catch (error) {

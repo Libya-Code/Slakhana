@@ -166,7 +166,7 @@ categoryForm.addEventListener("submit", async (event) => {
 
     } catch (error) {
         console.error(error);
-        
+
         showToast(
             error.response?.data?.message || "حدث خطأ أثناء إضافة الصنف.",
             true
@@ -180,86 +180,40 @@ categoryForm.addEventListener("submit", async (event) => {
 
 /* أزرار التعديل والتعطيل والحذف */
 
-tableBody.addEventListener("click", event => {
+tableBody.addEventListener("click", async event => {
     const button = event.target.closest("button[data-action]");
 
     if (!button) {
         return;
     }
 
-    const { action, id } = button.dataset;
-
-    const category = categories.find(
-        item => item.id === id
-    );
-
-    if (!category) {
-        showToast("لم يتم العثور على الصنف.", true);
-        return;
-    }
-
-    /* التعديل */
-
-    if (action === "edit") {
-        openModal(category);
-        return;
-    }
-
-    /* التفعيل والتعطيل */
-
-    if (action === "toggle") {
-        const nextStatus =
-            category.status === "active"
-                ? "inactive"
-                : "active";
-
-        const previousCategories = categories;
-
-        categories = categories.map(item =>
-            item.id === id
-                ? { ...item, status: nextStatus }
-                : item
-        );
-
-        if (!saveCategories()) {
-            categories = previousCategories;
-            return;
-        }
-
-
-        showToast(
-            nextStatus === "active"
-                ? "تم تفعيل الصنف."
-                : "تم تعطيل الصنف."
-        );
-
-        return;
-    }
-
+    const { action, id, name } = button.dataset;
     /* الحذف */
-
     if (action === "delete") {
         const confirmed = confirm(
-            `هل أنت متأكد من حذف الصنف "${category.name}"؟\nلا يمكن التراجع عن هذه العملية.`
+            `هل أنت متأكد من حذف الصنف "${name}"؟\nلا يمكن التراجع عن هذه العملية.`
         );
 
         if (!confirmed) {
             return;
         }
+        try {
+            const response = await axios.delete(`/api/category/${id}`);
 
-        const previousCategories = categories;
+            if (response.data.success) {
+                showToast(response.data.message);
+                setTimeout(() => location.reload(), 4000)
 
-        categories = categories.filter(
-            item => item.id !== id
-        );
+            }
 
-        if (!saveCategories()) {
-            categories = previousCategories;
-            return;
+        } catch (error) {
+            console.error("Delete Category Error:", error);
+
+            showToast(
+                error.response?.data?.message ||
+                "حدث خطأ أثناء حذف الصنف"
+            );
         }
-
-
-        showToast("تم حذف الصنف بنجاح.");
     }
 });
 

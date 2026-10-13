@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>الديون</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="stylesheet" href="/css/debts.css" />
+</head>
+<body>
+<div class="app">
+
+  <!-- القائمة الجانبية -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-icon"><i class="fa-solid fa-store"></i></div>
+      <div><h2>المنظومة</h2><p>إدارة المبيعات</p></div>
+    </div>
+    <div class="menu-title">القائمة</div>
+        <a href="/skow829o9" class="nav-link">
+          <i class="fa-solid fa-house"></i> الرئيسية
+        </a>
+
+        <a href="/skow829o9?sales=1" class="nav-link">
+          <i class="fa-solid fa-cash-register"></i> المبيعات
+        </a>
+
+        <a href="/categories" class="nav-link" data-feature="الأصناف">
+          <i class="fa-solid fa-cubes"></i> الأصناف
+        </a>
+       <a href="/debts" class="nav-link active">
+          <i class="fa-solid fa-file-invoice-dollar"></i>
+          <span>الديون</span>
+        </a>
+        <a class="nav-link" href="/employees"><i class="fa-solid fa-users"></i> الموظفين</a>
+
+    <div class="sidebar-footer">مرحباً بك<br /><strong><%= user.name %></strong></div>
+  </aside>
+
+  <!-- المحتوى -->
+  <main class="main">
+    <div class="topbar">
+      <div class="welcome">
+        <h1>الديون</h1>
+        <p>متابعة الديون والتسديدات</p>
+      </div>
+      <div class="top-actions">
+        <div class="date-box"><i class="fa-regular fa-calendar"></i> <%= new Date().toLocaleDateString('ar-LY') %></div>
+        <div class="profile">
+          <div class="avatar"><i class="fa-solid fa-user"></i></div>
+          <div class="profile-info"><strong><%= user.name %></strong><small>مدير</small></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="page-heading">
+      <div>
+        <h2>سجل الديون</h2>
+        <p>أضف مدين جديد أو سدّد دين قائم</p>
+      </div>
+      <button class="btn btn-primary" id="openAdd"><i class="fa-solid fa-plus"></i> إضافة دين</button>
+    </div>
+
+    <!-- الإحصائيات -->
+    <section class="stats">
+      <div class="stat-card">
+        <div class="stat-top"><div class="stat-icon blue"><i class="fa-solid fa-file-invoice-dollar"></i></div></div>
+        <div class="stat-label">إجمالي الديون</div>
+        <div class="stat-value"><%= stats.total.toFixed(2) %> <span>د.ل</span></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-top"><div class="stat-icon green"><i class="fa-solid fa-circle-check"></i></div></div>
+        <div class="stat-label">المسدد</div>
+        <div class="stat-value"><%= stats.paid.toFixed(2) %> <span>د.ل</span></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-top"><div class="stat-icon red"><i class="fa-solid fa-hourglass-half"></i></div></div>
+        <div class="stat-label">المتبقي</div>
+        <div class="stat-value"><%= stats.remaining.toFixed(2) %> <span>د.ل</span></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-top"><div class="stat-icon orange"><i class="fa-solid fa-users"></i></div></div>
+        <div class="stat-label">مدينين لم يسددوا كاملاً</div>
+        <div class="stat-value"><%= stats.open %> <span>مدين</span></div>
+      </div>
+    </section>
+
+    <!-- الجدول -->
+    <section class="sales-panel">
+      <div class="panel-header">
+        <div>
+          <h3>قائمة الديون</h3>
+          <p>بحث وفلترة حسب الحالة</p>
+        </div>
+        <span class="sales-count" id="count"><%= debts.length %> دين</span>
+      </div>
+
+      <div class="filters">
+        <div class="search-box">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input type="text" id="search" placeholder="ابحث بالاسم أو رقم الهاتف..." />
+        </div>
+        <select id="statusFilter">
+          <option value="">كل الحالات</option>
+          <option value="unpaid">غير مسدد</option>
+          <option value="partial">مسدد جزئياً</option>
+          <option value="paid">مسدد</option>
+        </select>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>المدين</th>
+              <th>إجمالي الدين</th>
+              <th>المسدد</th>
+              <th>المتبقي</th>
+              <th>الحالة</th>
+              <th>الاستحقاق</th>
+              <th>إجراءات</th>
+            </tr>
+          </thead>
+          <tbody id="tbody">
+            <% if (!debts.length) { %>
+              <tr id="emptyRow"><td colspan="8" class="empty">لا توجد ديون مسجلة</td></tr>
+            <% } %>
+            <% debts.forEach((d, i) => {
+                 const remaining = Math.max(d.amount - d.paid, 0);
+                 const pct = Math.min((d.paid / d.amount) * 100, 100);
+                
+                 const late = d.dueDate && d.status !== 'paid' && new Date(d.dueDate) < new Date();
+                 const labels = { unpaid:'غير مسدد', partial:'مسدد جزئياً', paid:'مسدد' };
+            %>
+            <tr data-id="<%= d._id %>"
+                data-name="<%= d.customerName %>"
+                data-phone="<%= d.phone %>"
+                data-status="<%= d.status %>"
+                data-remaining="<%= remaining %>"
+                data-payments="<%= JSON.stringify(d.payments || []) %>">
+              <td class="invoice"><%= i + 1 %></td>
+              <td>
+                <span class="customer"><%= d.customerName %></span>
+                <% if (d.phone) { %><span class="muted"><%= d.phone %></span><% } %>
+                <% if (d.note) { %><span class="muted"><%= d.note %></span><% } %>
+              </td>
+              <td class="amount"><%= d.amount.toFixed(2) %> د.ل</td>
+              <td>
+                <%= d.paid.toFixed(2) %> د.ل
+                <div class="progress"><i></i></div>
+              </td>
+              <td class="amount"><%= remaining.toFixed(2) %> د.ل</td>
+              <td><span class="badge <%= d.status %>"><%= labels[d.status] %></span></td>
+              <td class="<%= late ? 'due-late' : '' %>">
+                <%= d.dueDate ? new Date(d.dueDate).toLocaleDateString('ar-LY') : '—' %>
+              </td>
+              <td>
+                <div class="table-actions">
+                  <button class="btn-pay" title="تسديد" <%= d.status === 'paid' ? 'disabled' : '' %>><i class="fa-solid fa-money-bill-wave"></i></button>
+                  <button class="btn-history" title="سجل التسديدات"><i class="fa-solid fa-clock-rotate-left"></i></button>
+                  <button class="btn-delete" title="حذف"><i class="fa-solid fa-trash"></i></button>
+                </div>
+              </td>
+            </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+      <div class="table-footer"><span>إجمالي السجلات: <%= debts.length %></span></div>
+    </section>
+  </main>
+</div>
+
+<!-- نافذة إضافة دين -->
+<div class="modal" id="addModal">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h3>إضافة دين جديد</h3>
+      <button class="close-btn" data-close><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <form class="form" id="addForm">
+      <div class="form-grid">
+        <div class="field">
+          <label>اسم المدين *</label>
+          <input type="text" name="customerName" required />
+        </div>
+        <div class="field">
+          <label>رقم الهاتف</label>
+          <input type="tel" name="phone" />
+        </div>
+        <div class="field">
+          <label>مبلغ الدين (د.ل) *</label>
+          <input type="number" name="amount" step="0.01" min="0.01" required />
+        </div>
+        <div class="field">
+          <label>تاريخ الاستحقاق</label>
+          <input type="date" name="dueDate" />
+        </div>
+        <div class="field full">
+          <label>ملاحظة</label>
+          <textarea name="note"></textarea>
+        </div>
+      </div>
+      <div class="form-buttons">
+        <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> حفظ</button>
+        <button type="button" class="btn btn-cancel" data-close>إلغاء</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- نافذة التسديد -->
+<div class="modal" id="payModal">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h3>تسديد دين</h3>
+      <button class="close-btn" data-close><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <form class="form" id="payForm">
+      <div class="total-box">
+        <span id="payName">—</span>
+        <strong id="payRemaining">0.00 د.ل</strong>
+      </div>
+      <div class="field">
+        <label>طريقة الدفع</label>
+        <div class="transaction-type" id="methodBtns">
+          <button type="button" data-method="cash" class="active">نقدي</button>
+          <button type="button" data-method="transfer">تحويل</button>
+          <button type="button" data-method="binance">Binance</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>مبلغ التسديد (د.ل) *</label>
+        <input type="number" name="amount" step="0.01" min="0.01" required />
+      </div>
+      <div class="field">
+        <label>ملاحظة</label>
+        <input type="text" name="note" />
+      </div>
+      <div class="form-buttons">
+        <button type="button" class="btn btn-cancel" id="payAll">تسديد كامل المتبقي</button>
+        <button type="submit" class="btn btn-primary"><i class="fa-solid fa-check"></i> تأكيد</button>
+        <button type="button" class="btn btn-cancel" data-close>إلغاء</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- نافذة السجل -->
+<div class="modal" id="historyModal">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h3 id="historyTitle">سجل التسديدات</h3>
+      <button class="close-btn" data-close><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <ul class="history-list" id="historyList"></ul>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="/js/debts.js"></script>
+</body>
+</html>

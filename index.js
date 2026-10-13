@@ -4,6 +4,11 @@ const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
 const express = require("express");
 const app = express()
+const helmet = require("helmet");
+const mongoSanitize = require("@exortek/express-mongo-sanitize");
+const rateLimit = require("express-rate-limit");
+const hpp = require("hpp");
+const cors = require("cors");
 
 require("dotenv").config()
 
@@ -21,13 +26,48 @@ async function connectDB() {
   }
 }
 connectDB()
-const { Sale, category, User } = require("./moongodb")
+
+const { Sale, category, User, Debt, Employee } = require("./moongodb")
 const { text, verifyUser, verifyAdmin, time } = require("./functions");
 
 app.set("view engine", "ejs");
 app.set("views", "./views");
 
+app.use((req, res, next) => {
+    res.setHeader("X-Robots-Tag", "noindex, nofollow, noarchive");
+    next();
+});
+
 app.use(cookieParser());
+app.use(helmet());
+app.use(cors({
+    origin: "https://grey-rail-279824.hostingersite.com",
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true
+}));
+
+// 4. منع تكرار معاملات Query بطريقة قد تسبب التباسًا
+app.use(hpp());
+const apiLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    limit: 200,
+    standardHeaders: "draft-8",
+    legacyHeaders: false,
+    message: {
+        success: false,
+        message: "طلبات كثيرة، حاول مرة أخرى لاحقًا"
+    }
+});
+
+app.use(["/api", "/login"], apiLimiter);
+app.use(express.json({ limit: "20kb" }));
+app.use(express.urlencoded({
+    extended: false,
+    limit: "20kb"
+}));
+
+app.use(mongoSanitize());
 app.use(express.static("public"));
 app.use(express.json())
 app.use(text)
@@ -108,11 +148,10 @@ app.get("/categories", verifyAdmin, async (req, res) => {
     const Category = await category.find().lean();
 
     return res.render("categories", {
-      categories:Category
+      categories: Category
     });
   } catch (error) {
     console.error("Get Categories Error:", error);
-
     return res.status(500).send("حدث خطأ أثناء جلب الأصناف.");
   }
 });
@@ -132,7 +171,7 @@ app.post("/api/login", async (req, res) => {
         message: "البريد الإلكتروني وكلمة المرور مطلوبان"
       });
     }
-    const user = await User.findOne({ email: email.trim().toLowerCase() });
+    const user = await User.findOne({ email: email.trim().toLowerCase() }) || await Employee.findOne({ email: email.trim().toLowerCase() });
 
     if (!user) {
       return res.status(401).json({
@@ -140,7 +179,12 @@ app.post("/api/login", async (req, res) => {
         message: "البريد الإلكتروني أو كلمة المرور غير صحيحة"
       });
     } // التحقق من كلمة المرور المشفرة 
-
+    if (user.status === "inactive") {
+      return res.status(401).json({
+        success: false,
+        message: "انت مطرود من عمل"
+      });
+    }
     const isPasswordValid = await bcrypt.compare(password, user.password);
 
     if (!isPasswordValid) {
@@ -148,7 +192,10 @@ app.post("/api/login", async (req, res) => {
     }
     // إنشاء JWT 
     const token = jwt.sign(
-      { id: user._id }
+      {
+        id: user._id,
+        status: user.status
+      }
       , process.env.TOKEN_JWT,
       { expiresIn: "7d" });
     // تخزين التوكن في Cookie
@@ -287,35 +334,304 @@ app.delete("/api/delete", verifyUser, async (req, res) => {
 // اضافة تصنيف 
 // ============
 app.post("/api/categories", verifyUser, async (req, res) => {
-    try {
-        const { name, description } = req.body;
+  try {
+    const { name, description } = req.body;
 
-        if (!name || !name.trim()) {
+    if (!name || !name.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: "اسم الصنف مطلوب."
+      });
+    }
+
+    const newCategory = await category.create({
+      name: name.trim(),
+      description: description?.trim() || ""
+    });
+
+    return res.status(201).json({
+      success: true,
+      message: "تمت إضافة الصنف بنجاح.",
+      category: newCategory
+    });
+
+  } catch (error) {
+    console.error("Add Category Error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "حدث خطأ أثناء إضافة الصنف."
+    });
+  }
+});
+
+
+app.delete("/api/category/:id", verifyUser, async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        if (!mongoose.Types.ObjectId.isValid(id)) {
             return res.status(400).json({
                 success: false,
-                message: "اسم الصنف مطلوب."
+                message: "معرف الصنف غير صالح"
             });
         }
 
-        const newCategory = await category.create({
-            name: name.trim(),
-            description: description?.trim() || ""
-        });
+        const Category = await category.findByIdAndDelete(id);
 
-        return res.status(201).json({
+        if (!Category) {
+            return res.status(404).json({
+                success: false,
+                message: "الصنف غير موجود"
+            });
+        }
+
+        return res.status(200).json({
             success: true,
-            message: "تمت إضافة الصنف بنجاح.",
-            category: newCategory
+            message: "تم حذف الصنف بنجاح"
         });
 
     } catch (error) {
-        console.error("Add Category Error:", error);
+        console.error("Delete Category Error:", error);
 
         return res.status(500).json({
             success: false,
-            message: "حدث خطأ أثناء إضافة الصنف."
+            message: "حدث خطأ أثناء حذف الصنف"
         });
     }
+});
+
+// =======================
+
+const METHODS = ['cash', 'transfer', 'binance'];
+const escapeRegex = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const validId = (req, res) => {
+  if (!mongoose.isValidObjectId(req.params.id)) {
+    res.status(400).json({ ok: false, message: 'معرّف غير صحيح' });
+    return false;
+  }
+  return true;
+};
+
+app.get('/debts', verifyAdmin, async (req, res) => {
+  try {
+    const debts = await Debt.find().sort({ createdAt: -1 }).lean();
+    const stats = debts.reduce(
+      (s, d) => {
+        s.total += d.amount;
+        s.paid += d.paid;
+        if (d.status !== 'paid') s.open++;
+        return s;
+      },
+      { total: 0, paid: 0, open: 0 }
+    );
+    stats.remaining = stats.total - stats.paid;
+    res.render('debts', { debts, stats, user: req.user || { name: 'المدير' } });
+  } catch (e) {
+    console.error(e);
+    res.status(500).send('خطأ في السيرفر');
+  }
+});
+
+// إضافة دين
+app.post('/api/debts', verifyUser, async (req, res) => {
+  try {
+    let { customerName, phone, amount, dueDate, note, email, password } = req.body;
+    const amt = Number(amount);
+    if (!customerName?.trim()) return res.status(400).json({ ok: false, message: 'اسم المدين مطلوب' });
+    if (!password?.trim()) return res.status(400).json({ ok: false, message: 'كلمة مرور مطلوبه' });
+    if (!email?.trim()) return res.status(400).json({ ok: false, message: 'الاميل مطلوب' });
+    if (!amt || amt <= 0) return res.status(400).json({ ok: false, message: 'المبلغ غير صحيح' });
+    password = await bcrypt.hash(password, 12)
+    const debt = await Debt.create({ customerName, phone, amount: amt, note, dueDate: dueDate || null, email, password });
+    res.status(201).json({ ok: true, debt });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ ok: false, message: 'فشل إضافة الدين' });
+  }
+});
+
+// تسديد (كامل أو جزئي) — ذرّي يمنع التسديد الزائد
+app.post('/api/debts/:id/pay', verifyUser, async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!mongoose.isValidObjectId(id)) return res.status(400).json({ ok: false, message: 'معرّف غير صحيح' });
+
+    const amt = Number(req.body.amount);
+    if (!amt || amt <= 0) return res.status(400).json({ ok: false, message: 'مبلغ التسديد غير صحيح' });
+
+    const payment = {
+      amount: amt,
+      method: METHODS.includes(req.body.method) ? req.body.method : 'cash',
+      note: req.body.note || '',
+      date: new Date(),
+    };
+
+    const debt = await Debt.findOneAndUpdate(
+      { _id: id, $expr: { $lte: [{ $add: ['$paid', amt] }, '$amount'] } },
+      [
+        {
+          $set: {
+            paid: { $add: ['$paid', amt] },
+            payments: { $concatArrays: ['$payments', [payment]] },
+          },
+        },
+        {
+          $set: {
+            status: {
+              $cond: [{ $gte: ['$paid', '$amount'] }, 'paid', { $cond: [{ $gt: ['$paid', 0] }, 'partial', 'unpaid'] }],
+            },
+          },
+        },
+      ],
+      { returnDocument: 'after', updatePipeline: true }
+    );
+
+    if (!debt) return res.status(400).json({ ok: false, message: 'المبلغ أكبر من المتبقي أو الدين غير موجود' });
+    res.json({ ok: true, debt });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ ok: false, message: 'فشل التسديد' });
+  }
+});
+
+// حذف
+app.delete('/api/debts/:id', verifyUser, async (req, res) => {
+  try {
+    if (!mongoose.isValidObjectId(req.params.id)) return res.status(400).json({ ok: false, message: 'معرّف غير صحيح' });
+    const d = await Debt.findByIdAndDelete(req.params.id);
+    if (!d) return res.status(404).json({ ok: false, message: 'غير موجود' });
+    res.json({ ok: true });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ ok: false, message: 'فشل الحذف' });
+  }
+});
+
+
+// ==========================
+
+// routes/employees.page.js
+
+app.get('/employees', verifyAdmin, async (req, res) => {
+  try {
+    const employees = await Employee.find().sort({ createdAt: -1 }).lean();
+    const stats = employees.reduce(
+      (s, e) => {
+        s.total++;
+        if (e.status === 'active') {
+          s.active++;
+          s.salaries += e.salary || 0;
+        } else s.inactive++;
+        return s;
+      },
+      { total: 0, active: 0, inactive: 0, salaries: 0 }
+    );
+    res.render('employees', { employees, stats, user: req.user || { name: 'المدير' } });
+  } catch (e) {
+    console.error(e);
+    res.status(500).send('خطأ في السيرفر');
+  }
+});
+
+// إضافة موظف
+app.post('/api/employees', verifyUser, async (req, res) => {
+  try {
+    const { name, phone, position, salary, hireDate, note } = req.body;
+    const user = req.user
+    if (user.status !== "admin") return res.status(400).json({ ok: false, message: 'انت لا تملك صلاحيات اضافة موضف' });
+
+    if (!name?.trim()) return res.status(400).json({ ok: false, message: 'اسم الموظف مطلوب' });
+    const sal = Number(salary || 0);
+    if (isNaN(sal) || sal < 0) return res.status(400).json({ ok: false, message: 'الراتب غير صحيح' });
+
+    const employee = await Employee.create({
+      name, phone, position, note,
+      salary: sal,
+      hireDate: hireDate || Date.now(),
+    });
+    res.status(201).json({ ok: true, employee });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ ok: false, message: 'فشل إضافة الموظف' });
+  }
+});
+
+// تفعيل / إيقاف
+app.patch('/api/employees/:id/status', verifyUser, async (req, res) => {
+  try {
+    if (!validId(req, res)) return;
+    const user = req.user
+    if (user.status !== "admin") return res.status(400).json({ ok: false, message: 'انت لا تملك صلاحيات' });
+    const { status } = req.body;
+    if (!['active', 'inactive'].includes(status)) return res.status(400).json({ ok: false, message: 'حالة غير صحيحة' });
+
+    const employee = await Employee.findByIdAndUpdate(req.params.id, { status }, { returnDocument: 'after' });
+    if (!employee) return res.status(404).json({ ok: false, message: 'غير موجود' });
+    res.json({ ok: true, employee });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ ok: false, message: 'فشل تغيير الحالة' });
+  }
+});
+
+// تعديل موظف
+app.put('/api/employees/:id', verifyUser, async (req, res) => {
+  try {
+    if (!validId(req, res)) return;
+
+    const user = req.user
+    if (user.status !== "admin") return res.status(400).json({ ok: false, message: 'انت لا تملك صلاحيات تعديل بيانات الموضف' });
+
+    const { name, phone, position, salary, hireDate, note, password, email } = req.body;
+
+    if (!name?.trim()) return res.status(400).json({ ok: false, message: 'اسم الموظف مطلوب' });
+    const sal = Number(salary || 0);
+    if (isNaN(sal) || sal < 0) return res.status(400).json({ ok: false, message: 'الراتب غير صحيح' });
+
+    const employee = await Employee.findByIdAndUpdate(
+      req.params.id,
+      { name, phone, position, note, salary: sal, ...(hireDate && { hireDate }) },
+      { returnDocument: 'after', runValidators: true }
+    );
+    if (!employee) return res.status(404).json({ ok: false, message: 'غير موجود' });
+    if (typeof password === "string" && password.trim().length >= 8) {
+      employee.password = await bcrypt.hash(password.trim(), 12);
+    }
+
+    if (typeof email === "string" && email.trim() !== "") {
+      employee.email = email.trim();
+    }
+
+    await employee.save();
+
+    res.json({ ok: true, employee });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ ok: false, message: 'فشل التعديل' });
+  }
+});
+
+// حذف
+app.delete('/api/employees/:id', verifyUser, async (req, res) => {
+  try {
+    if (!validId(req, res)) return;
+
+    const user = req.user
+    if (user.status !== "admin") return res.status(400).json({ ok: false, message: 'انت لا تملك صلاحيات حدف موضف' });
+
+    const e = await Employee.findByIdAndDelete(req.params.id);
+    if (!e) return res.status(404).json({ ok: false, message: 'غير موجود' });
+    res.json({ ok: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ ok: false, message: 'فشل الحذف' });
+  }
+});
+
+
+app.use((req, res) => {
+    res.status(404).end();
 });
 
 const PORT = process.env.PORT || 3000

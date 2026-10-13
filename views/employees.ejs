@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>الموظفين</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="stylesheet" href="/css/employees.css" />
+</head>
+<body>
+<div class="app">
+
+  <!-- القائمة الجانبية -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-icon"><i class="fa-solid fa-store"></i></div>
+      <div><h2>المنظومة</h2><p>إدارة المبيعات</p></div>
+    </div>
+    <div class="menu-title">القائمة</div>
+     <a href="/skow829o9" class="nav-link">
+          <i class="fa-solid fa-house"></i> الرئيسية
+        </a>
+
+        <a href="/skow829o9?sales=1" class="nav-link">
+          <i class="fa-solid fa-cash-register"></i> المبيعات
+        </a>
+
+        <a href="/categories" class="nav-link" data-feature="الأصناف">
+          <i class="fa-solid fa-cubes"></i> الأصناف
+        </a>
+       <a href="/debts" class="nav-link">
+          <i class="fa-solid fa-file-invoice-dollar"></i>
+          <span>الديون</span>
+        </a>
+        <a class="nav-link active" href="/employees"><i class="fa-solid fa-users"></i> الموظفين</a>
+
+    <div class="sidebar-footer">مرحباً بك<br /><strong><%= user.name %></strong></div>
+  </aside>
+
+  <!-- المحتوى -->
+  <main class="main">
+    <div class="topbar">
+      <div class="welcome">
+        <h1>الموظفين</h1>
+        <p>إدارة بيانات الموظفين والرواتب</p>
+      </div>
+      <div class="top-actions">
+        <div class="date-box"><i class="fa-regular fa-calendar"></i> <%= new Date().toLocaleDateString('ar-LY') %></div>
+        <div class="profile">
+          <div class="avatar"><i class="fa-solid fa-user"></i></div>
+          <div class="profile-info"><strong><%= user.name %></strong><small>مدير</small></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="page-heading">
+      <div>
+        <h2>سجل الموظفين</h2>
+        <p>أضف موظف جديد أو عدّل بيانات موظف</p>
+      </div>
+      <button class="btn btn-primary" id="openAdd"><i class="fa-solid fa-user-plus"></i> إضافة موظف</button>
+    </div>
+
+    <!-- الإحصائيات -->
+    <section class="stats">
+      <div class="stat-card">
+        <div class="stat-top"><div class="stat-icon blue"><i class="fa-solid fa-users"></i></div></div>
+        <div class="stat-label">إجمالي الموظفين</div>
+        <div class="stat-value"><%= stats.total %> <span>موظف</span></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-top"><div class="stat-icon green"><i class="fa-solid fa-user-check"></i></div></div>
+        <div class="stat-label">على رأس العمل</div>
+        <div class="stat-value"><%= stats.active %> <span>موظف</span></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-top"><div class="stat-icon red"><i class="fa-solid fa-user-slash"></i></div></div>
+        <div class="stat-label">موقوفين</div>
+        <div class="stat-value"><%= stats.inactive %> <span>موظف</span></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-top"><div class="stat-icon orange"><i class="fa-solid fa-wallet"></i></div></div>
+        <div class="stat-label">إجمالي الرواتب الشهرية</div>
+        <div class="stat-value"><%= stats.salaries.toFixed(2) %> <span>د.ل</span></div>
+      </div>
+    </section>
+
+    <!-- الجدول -->
+    <section class="sales-panel">
+      <div class="panel-header">
+        <div>
+          <h3>قائمة الموظفين</h3>
+          <p>بحث وفلترة حسب الحالة</p>
+        </div>
+        <span class="sales-count" id="count"><%= employees.length %> موظف</span>
+      </div>
+
+      <div class="filters">
+        <div class="search-box">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input type="text" id="search" placeholder="ابحث بالاسم أو الهاتف أو الوظيفة..." />
+        </div>
+        <select id="statusFilter">
+          <option value="">كل الحالات</option>
+          <option value="active">على رأس العمل</option>
+          <option value="inactive">موقوف</option>
+        </select>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>الموظف</th>
+              <th>الوظيفة</th>
+              <th>الراتب</th>
+              <th>تاريخ التعيين</th>
+              <th>الحالة</th>
+              <th>إجراءات</th>
+            </tr>
+          </thead>
+          <tbody id="tbody">
+            <% if (!employees.length) { %>
+              <tr id="emptyRow"><td colspan="7" class="empty">لا يوجد موظفين مسجلين</td></tr>
+            <% } %>
+            <% employees.forEach((e, i) => {
+                 const labels = { active: 'على رأس العمل', inactive: 'موقوف' };
+                 const initial = (e.name || '?').trim().charAt(0);
+            %>
+            <tr data-id="<%= e._id %>"
+                data-name="<%= e.name %>"
+                data-phone="<%= e.phone %>"
+                data-position="<%= e.position %>"
+                data-status="<%= e.status %>"
+                data-emp="<%= JSON.stringify({ name: e.name, phone: e.phone, position: e.position, salary: e.salary, hireDate: e.hireDate, note: e.note }) %>">
+              <td class="invoice"><%= i + 1 %></td>
+              <td>
+                <div class="emp-cell">
+                  <span class="emp-avatar"><%= initial %></span>
+                  <div>
+                    <span class="customer"><%= e.name %></span>
+                    <% if (e.phone) { %><span class="muted"><%= e.phone %></span><% } %>
+                  </div>
+                </div>
+              </td>
+              <td><%= e.position || '—' %></td>
+              <td class="amount"><%= (e.salary || 0).toFixed(2) %> د.ل</td>
+              <td><%= e.hireDate ? new Date(e.hireDate).toLocaleDateString('ar-LY') : '—' %></td>
+              <td><span class="badge <%= e.status %>"><%= labels[e.status] %></span></td>
+              <td>
+                <div class="table-actions">
+                  <button class="btn-edit" title="تعديل"><i class="fa-solid fa-pen"></i></button>
+                  <button class="btn-toggle" title="<%= e.status === 'active' ? 'إيقاف' : 'تفعيل' %>">
+                    <i class="fa-solid <%= e.status === 'active' ? 'fa-user-slash' : 'fa-user-check' %>"></i>
+                  </button>
+                  <button class="btn-delete" title="حذف"><i class="fa-solid fa-trash"></i></button>
+                </div>
+              </td>
+            </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+      <div class="table-footer"><span>إجمالي السجلات: <%= employees.length %></span></div>
+    </section>
+  </main>
+</div>
+
+<!-- نافذة إضافة / تعديل -->
+<div class="modal" id="empModal">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h3 id="empModalTitle">إضافة موظف جديد</h3>
+      <button class="close-btn" data-close><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <form class="form" id="empForm">
+      <div class="form-grid">
+        <div class="field">
+          <label>اسم الموظف *</label>
+          <input type="text" name="name" required />
+        </div>
+        <div class="field">
+          <label> اميل الموضف*</label>
+          <input type="email" name="email" required />
+        </div>
+        <div class="field">
+          <label> كلمة سر موضف*</label>
+          <input type="password" name="password" required />
+        </div>
+        <div class="field">
+          <label>رقم الهاتف</label>
+          <input type="tel" name="phone" />
+        </div>
+        <div class="field">
+          <label>الوظيفة</label>
+          <input type="text" name="position" />
+        </div>
+        <div class="field">
+          <label>الراتب الشهري (د.ل)</label>
+          <input type="number" name="salary" step="0.01" min="0" value="0" />
+        </div>
+        <div class="field full">
+          <label>تاريخ التعيين</label>
+          <input type="date" name="hireDate" />
+        </div>
+        <div class="field full">
+          <label>ملاحظة</label>
+          <textarea name="note"></textarea>
+        </div>
+      </div>
+      <div class="form-buttons">
+        <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> حفظ</button>
+        <button type="button" class="btn btn-cancel" data-close>إلغاء</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="/js/employees.js"></script>
+</body>
+</html>

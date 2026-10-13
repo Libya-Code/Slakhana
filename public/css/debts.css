@@ -1,0 +1,123 @@
+/* ================== صفحة الديون ================== */
+
+/* شارات الحالة */
+.badge {
+  display: inline-block;
+  padding: 5px 12px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 700;
+}
+.badge.unpaid {
+  background: #ffebeb;
+  color: var(--red);
+  border: 1px solid var(--red);
+}
+.badge.partial {
+  background: #fff0df;
+  color: #e48a28;
+  border: 1px solid #e48a28;
+}
+.badge.paid {
+  background: #e8f7ee;
+  color: #16a34a;
+  border: 1px solid var(--btn-disabled);
+}
+
+/* شريط التقدم */
+.progress {
+  width: 90px;
+  height: 6px;
+  background: #eef2ef;
+  border-radius: 6px;
+  overflow: hidden;
+  margin-top: 6px;
+}
+.progress > i {
+  display: block;
+  height: 100%;
+  background: var(--primary);
+  transition: width 0.3s;
+}
+
+/* أزرار الجدول (تكمّل .table-actions الموجودة في style.css) */
+.btn-pay {
+  background: #e8f7ee;
+  color: var(--primary);
+}
+.btn-pay:hover {
+  background: var(--primary);
+  color: #fff;
+}
+.btn-pay:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.btn-pay:disabled:hover {
+  background: #e8f7ee;
+  color: var(--primary);
+}
+
+.btn-history {
+  background: #e7efff;
+  color: #4876d9;
+}
+.btn-history:hover {
+  background: #4876d9;
+  color: #fff;
+}
+
+/* حقل الملاحظة */
+.field textarea {
+  width: 100%;
+  min-height: 70px;
+  border: 1px solid #dfe7e2;
+  border-radius: 9px;
+  padding: 10px 12px;
+  outline: none;
+  font-size: 13px;
+  resize: vertical;
+  font-family: inherit;
+}
+.field textarea:focus {
+  border-color: var(--primary);
+}
+
+/* سجل التسديدات */
+.history-list {
+  list-style: none;
+  padding: 0 24px 24px;
+}
+.history-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+.history-list li:last-child {
+  border-bottom: none;
+}
+
+/* حالات عامة */
+.btn:disabled {
+  background: var(--btn-disabled);
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
+.due-late {
+  color: var(--red);
+  font-weight: 700;
+}
+
+/* أزرار التسديد: تتحمّل 3 أزرار في الصف */
+#payForm .form-buttons {
+  flex-wrap: wrap;
+}
+@media (max-width: 720px) {
+  #payForm .form-buttons button {
+    flex: 1 1 100%;
+  }
+}
