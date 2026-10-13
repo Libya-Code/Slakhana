@@ -39,7 +39,18 @@ app.use((req, res, next) => {
 });
 
 app.use(cookieParser());
-app.use(helmet());
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        scriptSrc: [
+          "'self'",
+          "https://cdn.jsdelivr.net"
+        ]
+      }
+    }
+  })
+);
 app.use(cors({
     origin: "https://grey-rail-279824.hostingersite.com",
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
