@@ -158,6 +158,7 @@ form.addEventListener("submit", async (event) => {
   }
 
   const sale = {
+    transactionType,
     name,
     qye,
     price,
