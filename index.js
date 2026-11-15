@@ -27,10 +27,21 @@ async function connectDB() {
 connectDB();
 
 const { Sale, category, User, Debt, Employee } = require("./moongodb");
-const { text, verifyUser, verifyAdmin, time } = require("./functions");
+const {
+  text,
+  verifyUser,
+  verifyAdmin,
+  requireAdminPage,
+  time,
+} = require("./functions");
 
 app.set("view engine", "ejs");
 app.set("views", "./views");
+app.locals.money = (n) =>
+  Number(n || 0).toLocaleString("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
 
 app.use((req, res, next) => {
   res.setHeader("X-Robots-Tag", "noindex, nofollow, noarchive");
@@ -80,72 +91,75 @@ app.use(
 
 app.use(mongoSanitize());
 app.use(express.static("public"));
-app.use(express.json());
 app.use(text);
 
 app.get("/login", (req, res) => {
   res.render("login");
 });
 
+const libyaDay = (date) =>
+  new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Africa/Tripoli",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(date);
+
 app.get("/skow829o9", verifyAdmin, async (req, res) => {
-  const { staetDate, endDate, sales } = req.query;
+  // staetDate: الاسم القديم (فيه خطأ إملائي) محفوظ للتوافق
+  const { startDate, staetDate, endDate, sales } = req.query;
+  const from = startDate ?? staetDate;
 
   try {
     const { startOfDay, startOfTomorrow } =
-      !isNaN(new Date(staetDate).getTime()) &&
-      !isNaN(new Date(endDate).getTime())
-        ? time(staetDate, endDate)
+      !isNaN(new Date(from).getTime()) && !isNaN(new Date(endDate).getTime())
+        ? time(from, endDate)
         : time();
 
-    const [total, totalSale, totalSaleCounter, Category] = await Promise.all([
-      Sale.find({
-        createdAt: {
-          $gte: startOfDay,
-          $lt: startOfTomorrow,
-        },
-      })
-        .limit(10)
-        .sort({ createdAt: -1 }),
-      Sale.countDocuments({
-        createdAt: {
-          $gte: startOfDay,
-          $lt: startOfTomorrow,
-        },
-      }),
+    const isHistory = sales == "1";
+    const range = { createdAt: { $gte: startOfDay, $lt: startOfTomorrow } };
+
+    const [total, totals, Category] = await Promise.all([
+      Sale.find(range)
+        .sort({ createdAt: -1 })
+        .limit(isHistory ? 500 : 200)
+        .lean(),
+      // نفصل المبيعات عن المشتريات (status === false) حتى لا تُحسب المشتريات كمبيعات
       Sale.aggregate([
-        {
-          $match: {
-            createdAt: {
-              $gte: startOfDay,
-              $lt: startOfTomorrow,
-            },
-          },
-        },
+        { $match: range },
         {
           $group: {
-            _id: null,
-            totalSales: { $sum: "$price" },
+            _id: { $ne: ["$status", false] },
+            sum: { $sum: "$price" },
+            count: { $sum: 1 },
           },
         },
       ]),
-      category.find(),
+      category.find().lean(),
     ]);
 
-    if (sales == "1") {
-      res.render("sales-history", {
-        total,
-        totalSale,
-        totalSaleCounter,
-        Category,
-      });
-    } else {
-      res.render("index", {
-        total,
-        totalSale,
-        totalSaleCounter,
-        Category,
-      });
-    }
+    const pick = (isSale) =>
+      totals.find((t) => t._id === isSale) || { sum: 0, count: 0 };
+    const sold = pick(true);
+    const bought = pick(false);
+    const stats = {
+      salesTotal: sold.sum,
+      salesCount: sold.count,
+      purchasesTotal: bought.sum,
+      purchasesCount: bought.count,
+      net: sold.sum - bought.sum,
+    };
+
+    const view = {
+      total,
+      stats,
+      Category,
+      user: req.user,
+      rangeFrom: libyaDay(startOfDay),
+      rangeTo: libyaDay(new Date(startOfTomorrow.getTime() - 1)),
+    };
+
+    return res.render(isHistory ? "sales-history" : "index", view);
   } catch (error) {
     console.error(error);
     return res.redirect("/login");
@@ -202,7 +216,6 @@ app.post("/api/login", async (req, res) => {
         success: false,
         message: "البريد الإلكتروني أو كلمة المرور غير صحيحة",
       });
-      4;
     }
     // إنشاء JWT
     const token = jwt.sign(
@@ -535,7 +548,7 @@ app.delete("/api/debts/:id", verifyUser, async (req, res) => {
 
 // routes/employees.page.js
 
-app.get("/employees", verifyAdmin, async (req, res) => {
+app.get("/employees", verifyAdmin, requireAdminPage, async (req, res) => {
   try {
     const employees = await Employee.find().sort({ createdAt: -1 }).lean();
     const stats = employees.reduce(
@@ -658,7 +671,8 @@ app.put("/api/employees/:id", verifyUser, async (req, res) => {
     }
 
     if (typeof email === "string" && email.trim() !== "") {
-      employee.email = email.trim();
+      // تسجيل الدخول يبحث بالبريد بحروف صغيرة، فنخزّنه بنفس الصيغة
+      employee.email = email.trim().toLowerCase();
     }
 
     await employee.save();

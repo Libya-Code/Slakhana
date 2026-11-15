@@ -59,7 +59,7 @@
       <main class="main">
         <header class="topbar">
           <div class="welcome">
-            <h1> <%= "name" ?? '' %>مرحباً بك 👋</h1>
+            <h1>مرحباً بك <%= locals.user?.name ?? "" %> 👋</h1>
             <p>إليك ملخص حركة المبيعات في ملحمتك.</p>
           </div>
 
@@ -82,22 +82,42 @@
         <section class="stats">
           <article class="stat-card">
             <div class="stat-top">
-              <span class="stat-label">إجمالي مبيعات</span>
+              <span class="stat-label">إجمالي المبيعات</span>
               <div class="stat-icon green">
                 <i class="fa-solid fa-money-bill-wave"></i>
               </div>
             </div>
-            <div class="stat-value" id="totalSales"><%= totalSaleCounter?.[0]?.totalSales ?? "0.00" %> <span>د.ل</span></div>
+            <div class="stat-value" id="totalSales"><%= money(stats.salesTotal) %> <span>د.ل</span></div>
           </article>
 
           <article class="stat-card">
             <div class="stat-top">
-              <span class="stat-label">عدد عمليات البيع اليوم</span>
+              <span class="stat-label">عدد عمليات البيع</span>
               <div class="stat-icon blue">
                 <i class="fa-solid fa-receipt"></i>
               </div>
             </div>
-            <div class="stat-value" id="salesCount"><%= totalSale %></div>
+            <div class="stat-value" id="salesCount"><%= stats.salesCount %></div>
+          </article>
+
+          <article class="stat-card">
+            <div class="stat-top">
+              <span class="stat-label">إجمالي المشتريات</span>
+              <div class="stat-icon orange">
+                <i class="fa-solid fa-cart-shopping"></i>
+              </div>
+            </div>
+            <div class="stat-value"><%= money(stats.purchasesTotal) %> <span>د.ل</span></div>
+          </article>
+
+          <article class="stat-card">
+            <div class="stat-top">
+              <span class="stat-label">الصافي (مبيعات − مشتريات)</span>
+              <div class="stat-icon <%= stats.net >= 0 ? 'green' : 'red' %>">
+                <i class="fa-solid fa-scale-balanced"></i>
+              </div>
+            </div>
+            <div class="stat-value"><%= money(stats.net) %> <span>د.ل</span></div>
           </article>
         </section>
          <%
@@ -117,16 +137,16 @@
                 <button type="submit">بحث</button>
                 <div class="sales-Data">
                     <p>  من تاريخ </p>
-                    <input type="date" id="Date1">
+                    <input type="date" id="Date1" value="<%= rangeFrom %>">
                     <p>  الي تاريخ  </p>
-                    <input type="date" id="Date2">
+                    <input type="date" id="Date2" value="<%= rangeTo %>">
                 </div>
                 
             </div>
           <div class="panel-header">
             <div>
               <!-- <h3>مبيعاتك</h3> -->
-              <p>جميع عمليات البيع المسجلة من تاريخ <%= "2006" %> الي تاريخ <%= "2026" %></p>
+              <p>جميع عمليات البيع المسجلة من تاريخ <%= rangeFrom %> الي تاريخ <%= rangeTo %></p>
             </div>
             <span class="sales-count" id="tableCount"><%= list.length %> عملية</span>
           </div>

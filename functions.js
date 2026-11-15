@@ -48,38 +48,52 @@ function text(req, res, next) {
 }
 
 
-async function verifyAdmin(req, res, next) {
+async function getUserFromToken(req) {
     const token = req.cookies?.token;
+    if (!token) return null;
+    const payload = jwt.verify(token, TOKEN_JWT);
+    const user =
+        (await User.findById(payload.id)) ||
+        (await Employee.findById(payload.id));
+    // مستخدم محذوف أو موظف موقوف لا يُسمح له بالدخول
+    if (!user || user.status === "inactive") return null;
+    return user;
+}
+
+// صفحات: أي مستخدم مسجّل دخوله (مدير أو موظف نشط)
+async function verifyAdmin(req, res, next) {
     try {
-        if (!token) return res.redirect("/login");
-        const Date = await jwt.verify(token, TOKEN_JWT)
-        const user = await User.findById(Date.id) || await Employee.findById(Date.id)
-        if (user.status === "inactive") return res.redirect("/login");
+        const user = await getUserFromToken(req);
+        if (!user) return res.redirect("/login");
+        req.user = user;
     } catch (error) {
         return res.redirect("/login");
     }
-    next()
+    next();
+}
+
+// صفحات: المدير فقط (تُستعمل بعد verifyAdmin)
+function requireAdminPage(req, res, next) {
+    if (req.user?.status !== "admin") return res.redirect("/skow829o9");
+    next();
 }
 
 async function verifyUser(req, res, next) {
-    const token = req.cookies?.token;
     try {
-        if (!token) return res.status(401).json({
-            success: false,
-            message: "يرجا تسجيل دخولك اولا "
-        });
-
-        const Date = await jwt.verify(token, TOKEN_JWT)
-        const user = await User.findById(Date.id) || await Employee.findById(Date.id)
-
-        req.user = user
+        const user = await getUserFromToken(req);
+        if (!user)
+            return res.status(401).json({
+                success: false,
+                message: "يرجا تسجيل دخولك اولا "
+            });
+        req.user = user;
     } catch (error) {
         return res.status(401).json({
             success: false,
             message: "يرجا تسجيل دخولك اولا "
         });
     }
-    next()
+    next();
 }
 
 function time(startOFDey, endOFDey) {
@@ -98,10 +112,11 @@ function time(startOFDey, endOFDey) {
     // بداية اليوم بتوقيت ليبيا محولة إلى UTC
     const startOfDay = new Date(`${libyaDate}T00:00:00+02:00`);
 
-    // لو تم إرسال تاريخ نهاية، نستخدمه، وإلا نضيف يومًا إلى البداية
+    // تاريخ النهاية شامل: نحتسب حتى نهاية ذلك اليوم
+    const DAY = 24 * 60 * 60 * 1000;
     const startOfTomorrow = endOFDey
-        ? new Date(`${endOFDey}T00:00:00+02:00`)
-        : new Date(startOfDay.getTime() + 24 * 60 * 60 * 1000);
+        ? new Date(new Date(`${endOFDey}T00:00:00+02:00`).getTime() + DAY)
+        : new Date(startOfDay.getTime() + DAY);
 
     return {
         startOfDay,
@@ -109,4 +124,4 @@ function time(startOFDey, endOFDey) {
     };
 }
 
-module.exports = { text, verifyUser, verifyAdmin, time }
+module.exports = { text, verifyUser, verifyAdmin, requireAdminPage, time }

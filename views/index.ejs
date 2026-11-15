@@ -60,7 +60,7 @@
       <main class="main">
         <header class="topbar">
           <div class="welcome">
-            <h1>مرحباً بك 👋</h1>
+            <h1>مرحباً بك <%= locals.user?.name ?? "" %> 👋</h1>
             <p>إليك ملخص حركة المبيعات في ملحمتك.</p>
           </div>
 
@@ -100,24 +100,44 @@
                 <i class="fa-solid fa-money-bill-wave"></i>
               </div>
             </div>
-            <div class="stat-value" id="totalSales"><%= totalSaleCounter?.[0]?.totalSales ?? "0.00" %> <span>د.ل</span></div>
+            <div class="stat-value" id="totalSales"><%= money(stats.salesTotal) %> <span>د.ل</span></div>
           </article>
 
           <article class="stat-card">
             <div class="stat-top">
-              <span class="stat-label">عدد عمليات البيع اليوم</span>
+              <span class="stat-label">عدد عمليات البيع</span>
               <div class="stat-icon blue">
                 <i class="fa-solid fa-receipt"></i>
               </div>
             </div>
-            <div class="stat-value" id="salesCount"><%= totalSale %></div>
+            <div class="stat-value" id="salesCount"><%= stats.salesCount %></div>
+          </article>
+
+          <article class="stat-card">
+            <div class="stat-top">
+              <span class="stat-label">إجمالي المشتريات</span>
+              <div class="stat-icon orange">
+                <i class="fa-solid fa-cart-shopping"></i>
+              </div>
+            </div>
+            <div class="stat-value"><%= money(stats.purchasesTotal) %> <span>د.ل</span></div>
+          </article>
+
+          <article class="stat-card">
+            <div class="stat-top">
+              <span class="stat-label">الصافي (مبيعات − مشتريات)</span>
+              <div class="stat-icon <%= stats.net >= 0 ? 'green' : 'red' %>">
+                <i class="fa-solid fa-scale-balanced"></i>
+              </div>
+            </div>
+            <div class="stat-value"><%= money(stats.net) %> <span>د.ل</span></div>
           </article>
         </section>
 
         <section class="sales-panel" id="sales">
           <div class="panel-header">
             <div>
-              <p>جميع عمليات البيع المسجلة لهذا اليوم.</p>
+              <p>جميع العمليات المسجلة لهذا اليوم (بيع وشراء).</p>
             </div>
              <%
     const query = (typeof searchQuery !== "undefined" ? searchQuery : "").trim().toLowerCase();
@@ -144,13 +164,13 @@
                   <th>سعر</th>
                   <th>طريقة الدفع</th>
                   <th>الوقت</th>
-                
+                  <th>نوع</th>
                 </tr>
               </thead>
     <tbody id="salesTable">
         <% if (!list.length) { %>
             <tr>
-                <td colspan="6">
+                <td colspan="7">
                     <div class="empty">
                         <!-- <i class="fa-solid fa-receipt"
                            style="font-size:28px;margin-bottom:12px"></i> -->
@@ -171,6 +191,7 @@
     minute: "2-digit",
     hour12: true
 }): "" %></td>
+                    <td><%= sale.status === false ? "شراء" : "بيع" %></td>
                 </tr>
             <% }) %>
         <% } %>
