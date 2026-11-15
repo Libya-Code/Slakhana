@@ -1,4 +1,3 @@
-const { name } = require("ejs");
 const { Schema, model } = require("mongoose");
 
 // سكيمة العداد
