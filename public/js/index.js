@@ -150,8 +150,18 @@ form.addEventListener("submit", async (event) => {
 
   const price = Number($("#price").value);
   const qye = Number($("#weight").value);
-  const name = $("#product").value
+  const name = (
+    transactionType === "sale" ? $("#product").value : $("#buyingProduct").value
+  ).trim();
   const payment = $("#payment").value
+  if (!name) {
+    showToast(
+      transactionType === "sale"
+        ? "يرجى اختيار الصنف."
+        : "يرجى إدخال اسم الشيء الذي اشتريته.",
+    );
+    return;
+  }
   if (!Number.isFinite(price) || price <= 0) {
     showToast("تأكد من إدخال وزن وسعر صحيحين.");
     return;
