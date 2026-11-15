@@ -1,13 +1,6 @@
 /* ================== صفحة الديون ================== */
 
-/* شارات الحالة */
-.badge {
-  display: inline-block;
-  padding: 5px 12px;
-  border-radius: 8px;
-  font-size: 11px;
-  font-weight: 700;
-}
+/* شارات الحالة (الأساس في style.css) */
 .badge.unpaid {
   background: #ffebeb;
   color: var(--red);
@@ -67,22 +60,6 @@
   color: #fff;
 }
 
-/* حقل الملاحظة */
-.field textarea {
-  width: 100%;
-  min-height: 70px;
-  border: 1px solid #dfe7e2;
-  border-radius: 9px;
-  padding: 10px 12px;
-  outline: none;
-  font-size: 13px;
-  resize: vertical;
-  font-family: inherit;
-}
-.field textarea:focus {
-  border-color: var(--primary);
-}
-
 /* سجل التسديدات */
 .history-list {
   list-style: none;
@@ -101,12 +78,6 @@
 }
 
 /* حالات عامة */
-.btn:disabled {
-  background: var(--btn-disabled);
-  cursor: not-allowed;
-  box-shadow: none;
-  transform: none;
-}
 .due-late {
   color: var(--red);
   font-weight: 700;
