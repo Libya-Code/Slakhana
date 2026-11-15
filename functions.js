@@ -27,7 +27,8 @@ function text(req, res, next) {
                 const result = {};
 
                 for (const [key, item] of Object.entries(value)) {
-                    result[key] = clean(item);
+                    // كلمات المرور تُترك كما هي (لا تنظيف ولا قص) حتى لا تتغير
+                result[key] = key === "password" ? item : clean(item);
                 }
 
                 return result;
@@ -48,10 +49,22 @@ function text(req, res, next) {
 }
 
 
+// سجل أمني بصيغة JSON (بدون كلمات مرور أو توكنات)
+function securityLog(event, details = {}, level = "INFO") {
+    console.log(
+        JSON.stringify({ ts: new Date().toISOString(), level, event, ...details })
+    );
+}
+
+const maskEmail = (email = "") => {
+    const [name = "", domain = ""] = String(email).split("@");
+    return `${name.slice(0, 2)}***@${domain}`;
+};
+
 async function getUserFromToken(req) {
     const token = req.cookies?.token;
     if (!token) return null;
-    const payload = jwt.verify(token, TOKEN_JWT);
+    const payload = jwt.verify(token, TOKEN_JWT, { algorithms: ["HS256"] });
     const user =
         (await User.findById(payload.id)) ||
         (await Employee.findById(payload.id));
@@ -75,6 +88,23 @@ async function verifyAdmin(req, res, next) {
 // صفحات: المدير فقط (تُستعمل بعد verifyAdmin)
 function requireAdminPage(req, res, next) {
     if (req.user?.status !== "admin") return res.redirect("/skow829o9");
+    next();
+}
+
+// واجهات API: للمدير فقط (تُستعمل بعد verifyUser)
+function requireAdminApi(req, res, next) {
+    if (req.user?.status !== "admin") {
+        securityLog(
+            "forbidden_admin_api",
+            { user: String(req.user?._id), method: req.method, path: req.path, ip: req.ip },
+            "WARN"
+        );
+        return res.status(403).json({
+            success: false,
+            ok: false,
+            message: "هذه العملية للمدير فقط"
+        });
+    }
     next();
 }
 
@@ -124,4 +154,13 @@ function time(startOFDey, endOFDey) {
     };
 }
 
-module.exports = { text, verifyUser, verifyAdmin, requireAdminPage, time }
+module.exports = {
+    text,
+    verifyUser,
+    verifyAdmin,
+    requireAdminPage,
+    requireAdminApi,
+    securityLog,
+    maskEmail,
+    time
+}
